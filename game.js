@@ -1,7 +1,71 @@
 /*mainline definitions*/
 const DEFAULT_MAP_LABEL_FONT = "12pt Georgia";
+const RUN_STATE = {
+	CONTINUE: -1,
+	EXIT_NORMAL: 0,
+	EXIT_ERROR: 1,
+	EXIT_CRASH: 2,
+	EXIT_KILL: 3
+};
 
-/*state_name, poly_points*/
+var prog_state = RUN_STATE.CONTINUE;
+
+var Turn =  function(key, values) {
+	this.key.year = key.year;
+	this.key.month = key.month;
+	this.values.state = values.state;
+	this.values.commodity = values.commodity;
+	this.values.initial = values.initial;
+	this.values.produced = values.produced;
+	this.values.used = values.used;
+	this.values.price = values.price;
+}
+
+
+var Commodity = function(key, value) {
+	/*what it's called*/
+	this.key=key;
+	/*equilibrium price*/
+	this.value=value;	
+}
+
+var State = function(key, values) {
+	this.key = key;
+	this.values.shape = values.shape;
+	this.values.ppl = values.ppl;
+	this.values.soldiers = values.soldiers;
+	this.values.fields = values.fields;
+	this.values.disasters = values.disasters;
+	this.values.neighbors = values.neighbors;
+	this.prototype.key = 'citystate';
+	this.prototype.values.shape = [];
+	this.prototype.values.ppl = 5000;
+	this.prototype.values.soldiers = 300;
+	this.prototype.values.fields = 100;
+	this.prototype.values.disasters = [];
+	this.prototype.values.neighbors = [];
+}
+
+var Nation = function(key, values) {
+	this.key = key;
+	this.values.states = values.states;
+	this.values.colormask = values.colormask;
+	this.values.demonym = values.demonym;
+}
+
+var gdata = require('./gdata.js');
+var _ = require('lodash');
+var loki = require('lokijs');
+var db = new loki('game_data.json');
+var l_states = db.addCollection('states', {indices:['key']});
+var l_nations = db.addCollection('nations', {indices:['nation_id','nation_name']});
+var l_comms = db.addCollection('commodities', {indices:['comm_id','comm_name','base_price']});
+var l_users = db.addCollection('users', {indices:['uid','uname']});
+var l_turns = db.addCollection('turns', {indices:['turn_no']});
+var i_data = new gdata.gdata();
+/*submodule definitions*/
+console.log(i_data[0]);
+
 var shapes = [
 	["Eire", "233, 456, 235, 385, 305, 284, 412, 261, 439, 297, 448, 345, 380, 449, 291, 463, 291, 463"],
 	["Picti", "424, 244, 430, 153, 489, 103, 618, 105, 605, 217, 575, 328, 457, 339"],
@@ -63,42 +127,6 @@ var shapes = [
 	["Moscva","1484, 651, 1677, 613, 1950, 550, 1440, 322"]
 ]
 
-/*submodule definitions*/
-
-var Turn = function() {
-	var seq;
-	var state;
-	var comm;
-	var start;
-	var produced;
-	var used;
-	var price;
-	
-	var _new = function(turn, id, s, c, i, pr, u, v) {
-		turn.seq = id;
-		turn.state = s;
-		turn.comm = c;
-		turn.start = i;
-		turn.produced = pr;
-		turn.used = u;
-		turn.price = v;
-	}
-}
-var State = function() {
-	var id;
-	var ppl;
-	var soldiers;
-	var fields;
-	var disasters;
-	var neighbors;
-	var _new = function(s, p, so, f, n) {
-		s.id = state_id++;
-		s.ppl = p;
-		s.soldiers = so;
-		s.fields = f;
-		s.neighbors = n;
-	}
-}
 
 /*<!--microeconomics.js (c)2015, Seven Autumns Media
 Economic simulation functions for games. From SCRATCH based on ideas and testing.
@@ -267,19 +295,7 @@ var get_first_turn = function() {
 	return 475;
 }
 
-var Commodity = function() {
-	var id;
-	/*what it's called*/
-	var name;
-	/*equilibrium price*/
-	var price;
-
-	var _new = function(c, name, price) {
-		c.id = commodity_id++;
-		c.name = name;
-		c.price = price;
-	}
-}/*end microeconomics.js*/
+/*end microeconomics.js*/
 
 /*KBD*/
 /*WASD to scroll map panel, QE to zoom out/in*/
@@ -348,8 +364,8 @@ var draw_details = function(context, countries_graph, options) {
 	context.font = map_label_font //TODO: options['map_label_font'] || DEFAULT_MAP_LABEL_FONT;
 	for (citystate in countries_graph) {
 		//console.log(countries_graph[citystate]);
-		var title = countries_graph[citystate][0];
-		var polygon = countries_graph[citystate][1].split(', ');
+		var title = countries_graph[citystate].name;
+		var polygon = countries_graph[citystate].shape;
 		var pts = Array();
 		var pt;
 		var sum_x = 0;
@@ -390,10 +406,40 @@ var draw_map = function(context, options) {
 	
 }
 
-/*mainline execution*/
-var render_loop = function() {
-	draw_map(map_layer, null);
-	draw_details(borders_layer, shapes, null);
+var draw_gui = function(context, options) {
+	/*adjust viewport size to fit screen resolution.*/
+	
 }
 
-render_loop();
+/*mainline execution*/
+/*draw map data*/
+var render_loop = function() {
+	draw_map(map_layer, null);
+	draw_details(borders_layer, i_data, null);
+}
+
+/*perform logic calculations for next redraw*/
+var logic_loop = function() {
+	//console.log(l_states.find('Eire'));
+}
+
+/*wait for user input, process events in realtime*/
+var input_loop = function() {
+	/*enable direct input queue*/
+	
+	/*enable indirect input queue while processing or exit*/
+	
+}
+
+var mainline = function() {
+	//while(prog_state == RUN_STATE.CONTINUE) {
+		logic_loop();
+		render_loop();
+		input_loop();
+	//}
+	//window.exit(prog_state);
+}
+
+mainline();
+
+module.exports.app=function(options) {return mainline(options);}
