@@ -1,0 +1,28 @@
+{
+  "name": "i1abnrk.github.io",
+  "version": "0.0.1",
+  "description": "A turn-based strategy game for the browser.",
+  "main": "bundle.js",
+  "dependencies": {
+    "lodash": "^3.10.1",
+    "lokijs": "^1.3.8"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "xdg-open index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/i1abnrk/i1abnrk.github.io"
+  },
+  "keywords": [
+    "game",
+    "strategy",
+    "turn"
+  ],
+  "author": "ZM Kneebone (i1abnrk)",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/i1abnrk/i1abnrk.github.io/issues"
+  }
+}
