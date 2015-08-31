@@ -1,8 +1,92 @@
 /*gdata.js*/
 
-var Nations_init = {
-
-};
+var Nations_init = [
+	{	name: 'Slavs',
+		color: 'rgba(255,0,0,0.405)',
+		demonym: 'Slavs',
+		states:	['Moscva', 'Minsk', 'Kiev']
+	},
+	{	name: 'Ostrogoths',
+		color: 'rgba(0,127,127,0.405)',
+		demonym: 'Ostrogoths',
+		states: ['Wien', 'Praha', 'Buda', 'Bucharest']
+	},
+	{	name: 'Byzantium',
+		color: 'rgba(0,255,0,0.405)',
+		demonym: 'Byzantines',
+		states: ['Byzant', 'Thessaly', 'Tirane', 'Athenai', 'Beograta']
+	},
+	{	name: 'Scandanavia',
+		color: 'rgba(127,0,127,0.405)',
+		demonym: 'Scandanavians',
+		states: ['Copenhagen', 'Oslo', 'Stockholm', 'Riga']
+	},
+	{	name: 'Prussia',
+		color: 'rgba(0,0,255,0.405)',
+		demonym: 'Prussian',
+		states: ['Gdansk', 'Warsawa', 'Berlin']
+	},
+	{	name: 'Alemania',
+		color: 'rgba(63,191,0,0.405)',
+		demonym: 'Alemanians',
+		states: ['Zurich', 'Frankfort', 'Munchen']
+	},
+	{	name: 'Saxony',
+		color: 'rgba(255,255,255,0.405)',
+		demonym: 'Saxons',
+		states: ['Friesland','Hanover','Hamburg', 'London', 'Kent']
+	},
+	{	name: 'Frank Kingdom',
+		color: 'rgba(191,63,63,0.405)',
+		demonym: 'Franks',
+		states: ['Orleans','Paris','Brux','Koln']
+	},
+	{	name: 'Keltoi',
+		color: 'rgba(63,191,63,0.405)',
+		demonym: 'Gaels',
+		states: ['York','Cardiff','Brest','Eire']
+	},
+	{	name: 'Aquitaine',
+		color: 'rgba(63,63,191,0.405)',
+		demonym: 'Goths',
+		states: ['Borges','Bordo','Narbon']
+	},
+	{	name: 'Catalonia',
+		color: 'rgba(191,191,191,0.405)',
+		demonym: 'Visigoths',
+		states: ['Barca','Toled','Madrid','Cordoba']
+	},
+	{	name: 'Gallicia',
+		color: 'rgba(63,127,127,0.405)',
+		demonym: 'Gallicians',
+		states: ['Gallicia','Lisboa']
+	},
+	{	name: 'Burgundy',
+		color: 'rgba(127,0,63,0.405)',
+		demonym: 'Burgundians',
+		states: ['Geneva', 'Leon', 'Marseille']
+	},
+	{	name: 'Picti',
+		color: 'rgba(0,208,48,0.405)',
+		demonym: 'Picts',
+		states: ['Picti']
+	},
+	{	name: 'Maurtania',
+		color: 'rgba(0,191,127,0.405)',
+		demonym: 'Vandals',
+		states: ['Balaerica','Sardine']
+	},
+	{	name: 'Latium',
+		color: 'rgba(192,144,63,0.405)',
+		demonym: 'Romans',
+		states: ['Genoa', 'Milano', 'Ravenna', 'Roma', 'Napoli', 'Siracusa']
+	},
+	{	name: 'Moesia',
+		color: 'rgba(128, 64, 91, 0.405)',
+		demonym: 'Alans',
+		states: ['Odessa', 'Sevastopol']
+	}
+];
 
 var States_init = [
 	{	name: 'Eire',
@@ -38,7 +122,7 @@ var States_init = [
 		ppl: 6500,
 		soldiers: 600,
 		fields: 840,
-		neighbors: ['Cardiff', 'York', 'Kent']
+		neighbors: ['Cardiff', 'York', 'Kent', 'Friesland']
 	},
 	{	name: 'Kent', 
 		shape: [470, 568, 511, 539, 604, 555, 616, 573, 504, 594],
@@ -122,19 +206,19 @@ var States_init = [
 		ppl: 4200,
 		soldiers: 290,
 		fields: 630,
-		neighbors: ['Brux', 'Frankfort', 'Koln']
+		neighbors: ['London', 'Brux', 'Hanover', 'Koln']
 	},
 	{	name: 'Koln',
 		shape: [802, 558, 826, 611, 820, 666, 774, 778, 735, 756, 713, 664, 781, 594, 757, 560],
 		ppl: 6200,
 		soldiers: 780,
 		fields: 1900,
-		neighbors: ['Friesland', 'Frankfort', 'Mayn', 'Geneva', 'Paris', 'Brux']
+		neighbors: ['Friesland', 'Hanover', 'Frankfort', 'Geneva', 'Paris', 'Brux']
 	},
-	{	name: 'Frankfort',
+	{	name: 'Hanover',
 		shape: [863, 469, 898, 489, 909, 514, 926, 562, 921, 588, 826, 614, 805, 559, 818, 495, 870, 502],
 		ppl: 5600,
-		neighbors: ['Friesland', 'Koln', 'Hamburg', 'Mayn'],
+		neighbors: ['Friesland', 'Koln', 'Hamburg', 'Frankfort'],
 		soldiers: 580,
 		fields: 390
 	},
@@ -143,7 +227,7 @@ var States_init = [
 		ppl: 3700,
 		soldiers: 400,
 		fields: 240,
-		neighbors: ['Copenhagen', 'Koln', 'Berlin', 'Mayn', 'Munchen', 'Frankfort']
+		neighbors: ['Copenhagen', 'Koln', 'Berlin', 'Frankfort', 'Munchen', 'Hanover']
 	},
 	{	name: 'Copenhagen',
 		shape: [867, 390, 876, 272, 959, 251, 1156, 289, 1135, 364, 1047, 401, 968, 465, 915, 392],
@@ -166,19 +250,19 @@ var States_init = [
 		fields: 360,
 		neighbors: ['Oslo', 'Copenhagen', 'Riga']
 	},
-	{	name: 'Mayn',
+	{	name: 'Frankfort',
 		shape: [826, 616, 921, 588, 967, 585, 951, 686, 930, 755, 773, 780, 820, 665],
 		ppl: 4500,
 		soldiers: 460,
 		fields: 580,
-		neighbors: ['Koln', 'Frankfort','Hamburg','Munchen','Zurich']
+		neighbors: ['Koln', 'Hanover','Hamburg','Munchen','Zurich']
 	},
 	{	name: 'Zurich',
 		shape: [775, 781, 931, 755, 930, 806, 889, 870, 821, 873],
 		ppl: 3200,
 		soldiers: 530,
 		fields: 420,
-		neighbors: ['Mayn', 'Munchen', 'Ravenna', 'Milano', 'Geneva']
+		neighbors: ['Frankfort', 'Munchen', 'Ravenna', 'Milano', 'Geneva']
 	},
 	{	name: 'Barca',
 		shape: [589, 1054, 588, 1094, 487, 1129, 419, 1196, 440, 1238, 312, 1162, 366, 1096, 406, 962, 518, 1035],
@@ -413,4 +497,5 @@ var States_init = [
 	}
 ];//States_init
 
-module.exports.gdata=function(){return States_init};
+module.exports.states=function(){return States_init};
+module.exports.nations=function(){return Nations_init};

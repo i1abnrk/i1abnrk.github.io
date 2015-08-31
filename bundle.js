@@ -30,104 +30,75 @@ var Commodity = function(key, value) {
 	this.value=value;	
 }
 
-var State = function(key, values) {
-	this.key = key;
-	this.values.shape = values.shape;
-	this.values.ppl = values.ppl;
-	this.values.soldiers = values.soldiers;
-	this.values.fields = values.fields;
-	this.values.disasters = values.disasters;
-	this.values.neighbors = values.neighbors;
-	this.prototype.key = 'citystate';
-	this.prototype.values.shape = [];
-	this.prototype.values.ppl = 5000;
-	this.prototype.values.soldiers = 300;
-	this.prototype.values.fields = 100;
-	this.prototype.values.disasters = [];
-	this.prototype.values.neighbors = [];
+var State = function(values) {
+	this.name = values.name;
+	this.shape = values.shape;
+	this.ppl = values.ppl;
+	this.soldiers = values.soldiers;
+	this.fields = values.fields;
+	this.disasters = values.disasters;
+	this.neighbors = values.neighbors;
+	/*this.prototype.name = 'citystate';
+	this.prototype.shape = [];
+	this.prototype.ppl = 5000;
+	this.prototype.soldiers = 300;
+	this.prototype.fields = 300;
+	this.prototype.disasters = [];
+	this.prototype.neighbors = [];*/
 }
 
-var Nation = function(key, values) {
-	this.key = key;
-	this.values.states = values.states;
-	this.values.colormask = values.colormask;
-	this.values.demonym = values.demonym;
+var Nation = function(values) {
+	this.name = values.name;
+	this.states = values.states;
+	this.color = values.color;
+	this.demonym = values.demonym;
 }
 
 var gdata = require('./gdata.js');
 var _ = require('lodash');
 var loki = require('lokijs');
 var db = new loki('game_data.json');
-var l_states = db.addCollection('states', {indices:['key']});
-var l_nations = db.addCollection('nations', {indices:['nation_id','nation_name']});
+var l_states = db.addCollection('states');
+var l_nations = db.addCollection('nations');
 var l_comms = db.addCollection('commodities', {indices:['comm_id','comm_name','base_price']});
 var l_users = db.addCollection('users', {indices:['uid','uname']});
 var l_turns = db.addCollection('turns', {indices:['turn_no']});
-var i_data = new gdata.gdata();
+
+var i_states = new gdata.states();
+var i_nations = new gdata.nations();
+
+for (s in i_states) {
+	var s_impl = new State(i_states[s]);
+	l_states.insert(s_impl);
+}
+for (n in i_nations) {
+	var n_impl = new Nation(i_nations[n]);
+	l_nations.insert(n_impl);
+}
+
+var nation_of_state = function(nations, state) {
+	for (n in nations) {
+		var sl = nations[n].states;
+		for(s in sl) {
+			var state_in = sl[s]
+			if(state == state_in) {
+				return nations[n];
+			}		
+		}
+	}
+	return null;
+}
+
+var state_color = function(state) {
+	/*select color from nations where nations.states contains state.name*/
+	var nation = nation_of_state(l_nations.data, state);
+	var color = nation.color;
+	return color;
+}
+
+
 /*submodule definitions*/
-console.log(i_data[0]);
-
-var shapes = [
-	["Eire", "233, 456, 235, 385, 305, 284, 412, 261, 439, 297, 448, 345, 380, 449, 291, 463, 291, 463"],
-	["Picti", "424, 244, 430, 153, 489, 103, 618, 105, 605, 217, 575, 328, 457, 339"],
-	["York", "487, 339, 576, 331, 606, 404, 604, 463, 507, 498"],
-	["Cardiff", "454, 346, 481, 343, 510, 539, 427, 591, 325, 575"],
-	["London", "601, 555, 511, 534, 507, 501, 603, 464, 637, 477, 637, 517"],
-	["Kent", "470, 568, 511, 539, 604, 555, 616, 573, 504, 594"],
-	["Brest","364, 640, 469, 655, 451, 719, 403, 746, 352, 688"],
-	["Orleans","453, 618, 543, 630, 616, 765, 514, 770, 429, 751, 451, 720, 468, 655"],
-	["Paris","551, 642, 606, 624, 713, 663, 733, 758, 630, 792"],
-	["Brux","608, 622, 614, 577, 708, 585, 758, 564, 778, 595, 712, 662"],
-	["Borges","433, 759, 472, 873, 640, 853, 629, 792, 614, 767, 513, 770"],
-	["Bordo","447, 838, 561, 972, 516, 1034, 408, 963"],
-	["Narbon","642, 858, 655, 1002, 593, 1012, 586, 1052, 519, 1034, 561, 972, 478, 872"],
-	["Geneva","626, 792, 734, 758, 773, 780, 821, 873, 756, 900, 678, 853"],
-	["Leon","653, 961, 754, 903, 627, 795"],
-	["Marseille","722, 1041, 777, 1005, 753, 904, 652, 961, 657, 1004, 684, 1033"],
-	["Friesland","677, 580, 747, 474, 862, 470, 868, 500, 818, 494, 804, 557, 757, 563, 707, 585"],
-	["Koln","802, 558, 826, 611, 820, 666, 774, 778, 735, 756, 713, 664, 781, 594, 757, 560"],
-	["Frankfort","863, 469, 898, 489, 909, 514, 926, 562, 921, 588, 826, 614, 805, 559, 818, 495, 870, 502"],
-	["Hamburg","864, 465, 867, 390, 915, 393, 965, 464, 988, 581, 919, 588, 926, 561, 897, 490"],
-	["Copenhagen","867, 390, 876, 272, 959, 251, 1156, 289, 1135, 364, 1047, 401, 968, 465, 915, 392"],
-	["Oslo","817, 125, 870, 94, 975, 68, 989, 133, 980, 178, 887, 237, 850, 231, 815, 194"],
-	["Stockholm","988, 255, 979, 175, 991, 133, 1099, 180, 1186, 184, 1135, 284"],
-	["Mayn","826, 616, 921, 588, 967, 585, 951, 686, 930, 755, 773, 780, 820, 665"],
-	["Zurich","775, 781, 931, 755, 930, 806, 889, 870, 821, 873"],
-	["Barca","589, 1054, 588, 1094, 487, 1129, 419, 1196, 440, 1238, 312, 1162, 366, 1096, 406, 962, 518, 1035"],
-	["Gallicia","108, 998, 363, 1096, 406, 962, 171, 859, 114, 890"],
-	["Lisboa","108, 998, 182, 1029, 109, 1172, 100, 1227, 32, 1212, 45, 1096"],
-	["Toled","181, 1028, 146, 1094, 312, 1162, 365, 1096"],
-	["Madrid","230, 1133, 191, 1219, 197, 1295, 166, 1317, 100, 1227, 109, 1171, 148, 1096"],
-	["Cordoba","230, 1135, 309, 1161, 441, 1240, 313, 1317, 196, 1295, 190, 1221"],
-	["Genoa","901, 1083, 904, 1001, 868, 947, 757, 925, 776, 1005, 805, 996, 826, 981, 871, 1010, 863, 1118"],
-	["Milano","760, 924, 752, 901, 822, 872, 890, 870, 921, 938, 904, 1001, 867, 947"],
-	["Ravenna","906, 1003, 950, 1044, 1004, 1045, 952, 963, 984, 919, 1019, 973, 1092, 813, 930, 806, 891, 870, 922, 938"],
-	["Roma","1009, 1169, 1029, 1095, 1005, 1047, 951, 1044, 906, 1002, 901, 1081, 979, 1171"],
-	["Napoli","1011, 1167, 1028, 1094, 1109, 1134, 1206, 1230, 1207, 1256, 1124, 1237, 1078, 1244, 1019, 1192"],
-	["Siracusa","1136, 1241, 1169, 1305, 1061, 1403, 952, 1367, 953, 1330, 1090, 1332, 1080, 1243"],
-	["Berlin","965, 466, 1028, 440, 1065, 503, 1106, 597, 1084, 690, 989, 579"],
-	["Munchen","1083, 691, 1093, 815, 932, 808, 930, 754, 970, 585, 990, 581"],
-	["Gdansk","1047, 471, 1191, 417, 1210, 495, 1266, 552, 1106, 599"],
-	["Warsawa","1265, 554, 1318, 615, 1303, 652, 1204, 691, 1084, 691, 1109, 600"],
-	["Wien","1095, 813, 1253, 822, 1205, 693, 1084, 692"],
-	["Beograta","1072, 858, 1236, 957, 1221, 1124, 1096, 1055, 1018, 973"],
-	["Buda","1235, 953, 1271, 956, 1273, 830, 1254, 823, 1094, 813, 1071, 858"],
-	["Bucharest","1273, 832, 1491, 767, 1562, 890, 1334, 981, 1271, 958"],
-	["Odessa","1631, 900, 1577, 1081, 1420, 1029, 1330, 981, 1562, 890"],
-	["Tirane","1222, 1127, 1250, 1243, 1370, 1234, 1330, 980, 1269, 958, 1237, 958"],
-	["Byzant","1580, 1083, 1636, 1131, 1519, 1219, 1508, 1171, 1432, 1181, 1419, 1026"],
-	["Thessaly","1432, 1183, 1457, 1226, 1404, 1240, 1365, 1209, 1329, 982, 1419, 1027"],
-	["Athenai","1249, 1241, 1365, 1420, 1503, 1348, 1371, 1234"],
-	["Sevastopol","1878, 847, 1884, 873, 1794, 931, 1734, 881, 1690, 822, 1630, 900, 1563, 891, 1677, 759, 1953, 717, 1808, 817"],
-	["Praha","1493, 769, 1304, 652, 1206, 694, 1255, 824, 1274, 832"],
-	["Riga","1201, 451, 1291, 260, 1438, 325, 1267, 555, 1209, 495"],
-	["Minsk","1266, 553, 1438, 324, 1495, 768, 1305, 653, 1318, 614"],
-	["Sardine","835, 1049, 802, 1094, 774, 1198, 771, 1269, 815, 1293, 842, 1265, 850, 1165"],
-	["Balaerica","464, 1221, 619, 1157, 634, 1220, 481, 1262"],
-	["Kiev","1953, 717, 1677, 759, 1563, 891, 1494, 767, 1484, 652, 1677, 614"],
-	["Moscva","1484, 651, 1677, 613, 1950, 550, 1440, 322"]
-]
-
+//console.log(i_data[0]);
 
 /*<!--microeconomics.js (c)2015, Seven Autumns Media
 Economic simulation functions for games. From SCRATCH based on ideas and testing.
@@ -352,12 +323,14 @@ var draw_polygon = function(context, pts) {
 	}
 	context.closePath();
 	context.stroke();
+	context.fill();
 }
 
 
 /*draw title*/
 var draw_title = function(context, title, where) {
 	context.textAlign='center'; 
+	context.fillStyle = 'rgba(0,0,0,1.0)';
 	context.fillText(title, where.x, where.y);
 }
 
@@ -387,6 +360,7 @@ var draw_details = function(context, countries_graph, options) {
 			}
 		}
 		//console.log(pts);
+		context.fillStyle=state_color(title);
 		draw_polygon(context, pts);
 		var middle=[];
 		middle.x = (sum_x/(comp/2));
@@ -416,12 +390,13 @@ var draw_gui = function(context, options) {
 /*draw map data*/
 var render_loop = function() {
 	draw_map(map_layer, null);
-	draw_details(borders_layer, i_data, null);
+	draw_details(borders_layer, i_states, null);
 }
 
 /*perform logic calculations for next redraw*/
 var logic_loop = function() {
 	//console.log(l_states.find('Eire'));
+	
 }
 
 /*wait for user input, process events in realtime*/
@@ -448,9 +423,93 @@ module.exports.app=function(options) {return mainline(options);}
 },{"./gdata.js":2,"lodash":3,"lokijs":5}],2:[function(require,module,exports){
 /*gdata.js*/
 
-var Nations_init = {
-
-};
+var Nations_init = [
+	{	name: 'Slavs',
+		color: 'rgba(255,0,0,0.405)',
+		demonym: 'Slavs',
+		states:	['Moscva', 'Minsk', 'Kiev']
+	},
+	{	name: 'Ostrogoths',
+		color: 'rgba(0,127,127,0.405)',
+		demonym: 'Ostrogoths',
+		states: ['Wien', 'Praha', 'Buda', 'Bucharest']
+	},
+	{	name: 'Byzantium',
+		color: 'rgba(0,255,0,0.405)',
+		demonym: 'Byzantines',
+		states: ['Byzant', 'Thessaly', 'Tirane', 'Athenai', 'Beograta']
+	},
+	{	name: 'Scandanavia',
+		color: 'rgba(127,0,127,0.405)',
+		demonym: 'Scandanavians',
+		states: ['Copenhagen', 'Oslo', 'Stockholm', 'Riga']
+	},
+	{	name: 'Prussia',
+		color: 'rgba(0,0,255,0.405)',
+		demonym: 'Prussian',
+		states: ['Gdansk', 'Warsawa', 'Berlin']
+	},
+	{	name: 'Alemania',
+		color: 'rgba(63,191,0,0.405)',
+		demonym: 'Alemanians',
+		states: ['Zurich', 'Frankfort', 'Munchen']
+	},
+	{	name: 'Saxony',
+		color: 'rgba(255,255,255,0.405)',
+		demonym: 'Saxons',
+		states: ['Friesland','Hanover','Hamburg', 'London', 'Kent']
+	},
+	{	name: 'Frank Kingdom',
+		color: 'rgba(191,63,63,0.405)',
+		demonym: 'Franks',
+		states: ['Orleans','Paris','Brux','Koln']
+	},
+	{	name: 'Keltoi',
+		color: 'rgba(63,191,63,0.405)',
+		demonym: 'Gaels',
+		states: ['York','Cardiff','Brest','Eire']
+	},
+	{	name: 'Aquitaine',
+		color: 'rgba(63,63,191,0.405)',
+		demonym: 'Goths',
+		states: ['Borges','Bordo','Narbon']
+	},
+	{	name: 'Catalonia',
+		color: 'rgba(191,191,191,0.405)',
+		demonym: 'Visigoths',
+		states: ['Barca','Toled','Madrid','Cordoba']
+	},
+	{	name: 'Gallicia',
+		color: 'rgba(63,127,127,0.405)',
+		demonym: 'Gallicians',
+		states: ['Gallicia','Lisboa']
+	},
+	{	name: 'Burgundy',
+		color: 'rgba(127,0,63,0.405)',
+		demonym: 'Burgundians',
+		states: ['Geneva', 'Leon', 'Marseille']
+	},
+	{	name: 'Picti',
+		color: 'rgba(0,208,48,0.405)',
+		demonym: 'Picts',
+		states: ['Picti']
+	},
+	{	name: 'Maurtania',
+		color: 'rgba(0,191,127,0.405)',
+		demonym: 'Vandals',
+		states: ['Balaerica','Sardine']
+	},
+	{	name: 'Latium',
+		color: 'rgba(192,144,63,0.405)',
+		demonym: 'Romans',
+		states: ['Genoa', 'Milano', 'Ravenna', 'Roma', 'Napoli', 'Siracusa']
+	},
+	{	name: 'Moesia',
+		color: 'rgba(128, 64, 91, 0.405)',
+		demonym: 'Alans',
+		states: ['Odessa', 'Sevastopol']
+	}
+];
 
 var States_init = [
 	{	name: 'Eire',
@@ -570,19 +629,19 @@ var States_init = [
 		ppl: 4200,
 		soldiers: 290,
 		fields: 630,
-		neighbors: ['Brux', 'Frankfort', 'Koln']
+		neighbors: ['Brux', 'Hanover', 'Koln']
 	},
 	{	name: 'Koln',
 		shape: [802, 558, 826, 611, 820, 666, 774, 778, 735, 756, 713, 664, 781, 594, 757, 560],
 		ppl: 6200,
 		soldiers: 780,
 		fields: 1900,
-		neighbors: ['Friesland', 'Frankfort', 'Mayn', 'Geneva', 'Paris', 'Brux']
+		neighbors: ['Friesland', 'Hanover', 'Frankfort', 'Geneva', 'Paris', 'Brux']
 	},
-	{	name: 'Frankfort',
+	{	name: 'Hanover',
 		shape: [863, 469, 898, 489, 909, 514, 926, 562, 921, 588, 826, 614, 805, 559, 818, 495, 870, 502],
 		ppl: 5600,
-		neighbors: ['Friesland', 'Koln', 'Hamburg', 'Mayn'],
+		neighbors: ['Friesland', 'Koln', 'Hamburg', 'Frankfort'],
 		soldiers: 580,
 		fields: 390
 	},
@@ -591,7 +650,7 @@ var States_init = [
 		ppl: 3700,
 		soldiers: 400,
 		fields: 240,
-		neighbors: ['Copenhagen', 'Koln', 'Berlin', 'Mayn', 'Munchen', 'Frankfort']
+		neighbors: ['Copenhagen', 'Koln', 'Berlin', 'Frankfort', 'Munchen', 'Hanover']
 	},
 	{	name: 'Copenhagen',
 		shape: [867, 390, 876, 272, 959, 251, 1156, 289, 1135, 364, 1047, 401, 968, 465, 915, 392],
@@ -614,19 +673,19 @@ var States_init = [
 		fields: 360,
 		neighbors: ['Oslo', 'Copenhagen', 'Riga']
 	},
-	{	name: 'Mayn',
+	{	name: 'Frankfort',
 		shape: [826, 616, 921, 588, 967, 585, 951, 686, 930, 755, 773, 780, 820, 665],
 		ppl: 4500,
 		soldiers: 460,
 		fields: 580,
-		neighbors: ['Koln', 'Frankfort','Hamburg','Munchen','Zurich']
+		neighbors: ['Koln', 'Hanover','Hamburg','Munchen','Zurich']
 	},
 	{	name: 'Zurich',
 		shape: [775, 781, 931, 755, 930, 806, 889, 870, 821, 873],
 		ppl: 3200,
 		soldiers: 530,
 		fields: 420,
-		neighbors: ['Mayn', 'Munchen', 'Ravenna', 'Milano', 'Geneva']
+		neighbors: ['Frankfort', 'Munchen', 'Ravenna', 'Milano', 'Geneva']
 	},
 	{	name: 'Barca',
 		shape: [589, 1054, 588, 1094, 487, 1129, 419, 1196, 440, 1238, 312, 1162, 366, 1096, 406, 962, 518, 1035],
@@ -861,7 +920,8 @@ var States_init = [
 	}
 ];//States_init
 
-module.exports.gdata=function(){return States_init};
+module.exports.states=function(){return States_init};
+module.exports.nations=function(){return Nations_init};
 
 },{}],3:[function(require,module,exports){
 (function (global){

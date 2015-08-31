@@ -1,7 +1,7 @@
 {
-  "name": "i1abnrk.github.io",
+  "name": "Atilla the Hun",
   "version": "0.0.1",
-  "description": "A turn-based strategy game for the browser.",
+  "description": "A turn-based strategy game for the browser. Play at i1abnrk.github.io",
   "main": "bundle.js",
   "dependencies": {
     "lodash": "^3.10.1",
