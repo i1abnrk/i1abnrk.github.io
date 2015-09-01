@@ -1,25 +1,32 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>Atilla the Hun</title>
-<style>
-canvas {
-	background-color: transparent;
-	position: absolute;
-	#imap {
-		z-index: 1;
-	}
-	#borders {
-		z-index: 2;
-	}
-}
-</style>
-</head>
-<body>
-<div id="viewport">
-<canvas id="imap" width="2298" height="1730"></canvas>
-<canvas id="borders" width="2298" height="1730"></canvas>
-</div>
-<script src="bundle.js"></script>
-</body>
+	<head>
+		<title>Atilla the Hun</title>
+		<style>
+			canvas {
+				background-color: transparent;
+				position: absolute;
+				#imap {
+					z-index: 1;
+				}
+				#borders {
+					z-index: 2;
+				}
+			}
+			text {
+				font: 12pt Georgia;
+				color: black;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="viewport">
+			<canvas id="map_layer" width="2298" height="1730"></canvas>
+			<canvas id="border_layer" width="2298" height="1730">
+				<svg id="borders" width="2298" height="1730"></svg>
+			</canvas>
+		<!--<canvas id='highlights" width="2298" height="1730"></canvas>-->
+		</div>
+		<script src="bundle.js"></script>
+	</body>
 </html>

@@ -11,23 +11,23 @@ const RUN_STATE = {
 
 var prog_state = RUN_STATE.CONTINUE;
 
-var Turn =  function(key, values) {
-	this.key.year = key.year;
-	this.key.month = key.month;
-	this.values.state = values.state;
-	this.values.commodity = values.commodity;
-	this.values.initial = values.initial;
-	this.values.produced = values.produced;
-	this.values.used = values.used;
-	this.values.price = values.price;
+var Turn =  function(values) {
+	this.year = values.year;
+	this.month = values.month;
+	this.state = values.state;
+	this.commodity = values.commodity;
+	this.initial = values.initial;
+	this.produced = values.produced;
+	this.used = values.used;
+	this.price = values.price;
 }
 
 
-var Commodity = function(key, value) {
+var Commodity = function(values) {
 	/*what it's called*/
-	this.key=key;
+	this.name=values.name;
 	/*equilibrium price*/
-	this.value=value;	
+	this.baseprice=values.baseprice;	
 }
 
 var State = function(values) {
@@ -38,13 +38,6 @@ var State = function(values) {
 	this.fields = values.fields;
 	this.disasters = values.disasters;
 	this.neighbors = values.neighbors;
-	/*this.prototype.name = 'citystate';
-	this.prototype.shape = [];
-	this.prototype.ppl = 5000;
-	this.prototype.soldiers = 300;
-	this.prototype.fields = 300;
-	this.prototype.disasters = [];
-	this.prototype.neighbors = [];*/
 }
 
 var Nation = function(values) {
@@ -58,11 +51,13 @@ var gdata = require('./gdata.js');
 var _ = require('lodash');
 var loki = require('lokijs');
 var db = new loki('game_data.json');
+var current_turn = first_turn;
 var l_states = db.addCollection('states');
 var l_nations = db.addCollection('nations');
-var l_comms = db.addCollection('commodities', {indices:['comm_id','comm_name','base_price']});
-var l_users = db.addCollection('users', {indices:['uid','uname']});
-var l_turns = db.addCollection('turns', {indices:['turn_no']});
+var l_comms = db.addCollection('commodities');
+var l_users = db.addCollection('users');
+var l_turns = db.addCollection('turns');
+var l_market = db.addCollection('market');
 
 var i_states = new gdata.states();
 var i_nations = new gdata.nations();
@@ -166,6 +161,29 @@ var get_state_id = function(state) {
 
 var get_commodity_id = function(commodity) {
 	return commodity.id;
+}
+
+var coll_by_name = function(coll) {
+	var src = {
+		'nations': l_nations,
+		'states': l_states,
+		'turns': l_turns,
+		'market': l_market,
+		'commodities': l_commodities,
+		'users': l_users
+	}
+
+	return src[coll].data();
+}
+/**run function @fun over loki collection by name @coll, 
+	where coll is filtered by comparison function @cmp*/
+var lod_for = function(coll, cmp, fun) {
+	var target = coll_by_name(coll);
+	
+	target = _.filter(cmp);
+	for(e in c) {
+		fun(e);
+	}
 }
 
 /*Based on equilibrium yeild curve model as explained in 
@@ -283,55 +301,66 @@ var KEYS = {
 onDocumentKeydown = function(e) {
 	switch(e.keyCode) {
 		case KEYS.W:
+			//scrollMap('top');
 			break;
 		case KEYS.A:
+			//scrollMap('left');
 			break;
 		case KEYS.S:
+			//scrollMap('down');
 			break;
 		case KEYS.D:
+			//scrollMap('right');
 			break;
 		case KEYS.Q:
+			//zoomMap('in');
 			break;
 		case KEYS.E:
+			//zoomMap('out');
 			break;
 	}
 }
 
 /*GUI*/
-var map = document.getElementById('imap');
-var borders = document.getElementById('borders');
+var map = document.getElementById('map_layer');
+var borders_layer_elt = document.getElementById('border_layer');
+var borders_img = document.getElementById('borders');
+//var highlights = document.getElementById('highlights');
 var map_label_font = DEFAULT_MAP_LABEL_FONT;
 var map_layer = map.getContext('2d');
-var borders_layer = borders.getContext('2d');
+var border_layer = borders_layer_elt.getContext('2d');
+//var highlight_layer = hightlights.getContext('2d');
 
 /*draw shapes*/
-var draw_polygon = function(context, pts) {
+var draw_polygon = function(context, pts, options) {
 	//console.log(pts);
 	var n = 0;
-	context.strokeStyle = 'blue';
-	for(pt in pts) {
-		var dx = pts[pt][0];
-		var dy = pts[pt][1];
-		if(pt == 0) {
-			context.beginPath();
-			context.moveTo(dx,dy);
-		} else {
-			context.lineTo(dx,dy);
-			context.stroke();
-		}
-		
-	}
-	context.closePath();
-	context.stroke();
-	context.fill();
+	var p_elt=document.createElement('polygon');
+	p_elt.style['stroke']=options.strokeStyle;
+	p_elt.style['stroke-width']=options.lineWidth;
+	p_elt.style['fill']=state_color(options.id);
+	p_elt.setAttribute('id', options.id);
+	p_elt.setAttribute('points', pts);
+	context.appendChild(p_elt);
 }
 
+var highlight_polygon = function(context, pts) {
+	draw_polygon(context, pts, {lineWidth: 3, strokeStyle: 'red'});
+}
+
+var unhighlight_polygon = function(context, pts) {
+	draw_polygon(context, pts, {lineWidth: 1, strokeStyle: 'blue'});
+}
 
 /*draw title*/
 var draw_title = function(context, title, where) {
-	context.textAlign='center'; 
-	context.fillStyle = 'rgba(0,0,0,1.0)';
-	context.fillText(title, where.x, where.y);
+	var t_elt = document.createElement('text');
+	t_elt.style['font']=DEFAULT_MAP_LABEL_FONT; 
+	t_elt.style['fill']='black';
+	t_elt.setAttribute('x', where.x);
+	t_elt.setAttribute('y', where.y);
+	t_elt.innerHTML = title;
+	context.appendChild(t_elt);
 }
 
 var draw_details = function(context, countries_graph, options) {
@@ -360,8 +389,8 @@ var draw_details = function(context, countries_graph, options) {
 			}
 		}
 		//console.log(pts);
-		context.fillStyle=state_color(title);
-		draw_polygon(context, pts);
+		//context.fillStyle=state_color(title);
+		draw_polygon(context, pts, {lineWidth: 1, strokeStyle: 'blue', id: countries_graph[citystate].name});
 		var middle=[];
 		middle.x = (sum_x/(comp/2));
 		middle.y = (sum_y/(comp/2));
@@ -390,7 +419,7 @@ var draw_gui = function(context, options) {
 /*draw map data*/
 var render_loop = function() {
 	draw_map(map_layer, null);
-	draw_details(borders_layer, i_states, null);
+	draw_details(borders, i_states, null);
 }
 
 /*perform logic calculations for next redraw*/
@@ -545,7 +574,7 @@ var States_init = [
 		ppl: 6500,
 		soldiers: 600,
 		fields: 840,
-		neighbors: ['Cardiff', 'York', 'Kent']
+		neighbors: ['Cardiff', 'York', 'Kent', 'Friesland']
 	},
 	{	name: 'Kent', 
 		shape: [470, 568, 511, 539, 604, 555, 616, 573, 504, 594],
@@ -629,7 +658,7 @@ var States_init = [
 		ppl: 4200,
 		soldiers: 290,
 		fields: 630,
-		neighbors: ['Brux', 'Hanover', 'Koln']
+		neighbors: ['London', 'Brux', 'Hanover', 'Koln']
 	},
 	{	name: 'Koln',
 		shape: [802, 558, 826, 611, 820, 666, 774, 778, 735, 756, 713, 664, 781, 594, 757, 560],
