@@ -63,16 +63,13 @@ var l_users = db.addCollection('users');
 var l_turns = db.addCollection('turns');
 var l_market = db.addCollection('market');
 
-//initialization
-var i_states, i_nations, i_commodities;
-
 var init = function() {
-	i_states = new gdata.states();
-	i_nations = new gdata.nations();
-	i_commodities = new gdata.commodities();
-	_.forEach(i_states, function (s) {l_states.insert(new State(s))});
-	_.forEach(i_nations, function (n) {l_nations.insert(new Nation(n))});
-	_.forEach(i_commodities, function (c) {l_commodities.insert(new Commodity(c))});
+	var i_states = new gdata.states();
+	var i_nations = new gdata.nations();
+	var i_commodities = new gdata.commodities();
+	_.each(i_states, function (s) {l_states.insert(new State(s))});
+	_.each(i_nations, function (n) {l_nations.insert(new Nation(n))});
+	_.each(i_commodities, function (c) {l_commodities.insert(new Commodity(c))});
 }
 
 //utils
@@ -92,6 +89,7 @@ var nation_of_state = function(nations, state) {
 			}		
 		}
 	}
+
 	return null;
 }
 
@@ -174,7 +172,8 @@ var get_commodity_id = function(commodity) {
 	return commodity.id;
 }
 
-var coll_by_name = function(coll) {
+/* use loki.getCollection(name)
+	var coll_by_name = function(coll) {
 	var src = {
 		'nations': l_nations,
 		'states': l_states,
@@ -185,16 +184,13 @@ var coll_by_name = function(coll) {
 	}
 
 	return src[coll].data();
-}
+}*/
 /**run function @fun over loki collection by name @coll, 
 	where coll is filtered by comparison function @cmp*/
-var lod_for = function(coll, cmp, fun) {
-	var target = coll_by_name(coll);
-	
-	target = _.filter(cmp);
-	for(e in c) {
-		fun(e);
-	}
+var lod_for = function(coll, fun, cmp) {
+	var target = db.getCollection(coll).data;
+	var sample = cmp?_.filter(target, cmp):target;
+	_.each(sample, fun(elt));
 }
 
 /*Based on equilibrium yeild curve model as explained in 
@@ -339,19 +335,20 @@ var map_layer = document.getElementById('map_layer');
 //var highlights = document.getElementById('highlights');
 var map_label_font = DEFAULT_MAP_LABEL_FONT;
 //var map_layer = map.getContext('2d');
-var border_layer = document.getElementById('border_layer');
+//var border_layer = document.getElementById('border_layer');
 //var highlight_layer = hightlights.getContext('2d');
 
 /*draw shapes*/
 var draw_polygon = function(context, pts, options) {
 	//console.log(pts);
-	var p_elt=document.createElementNS(SVG_NS, 'polygon');
+	/*var p_elt=document.createElementNS(SVG_NS, 'polygon');
 	p_elt.setAttribute('points', pts);
 	p_elt.setAttribute('id', options.id);
 	p_elt.style['fill'] = state_color(options.id);
 	p_elt.style['stroke-width'] = options.lineWidth; 
 	p_elt.style['stroke'] = options.strokeStyle;
-	context.appendChild(p_elt);
+	context.appendChild(p_elt);*/
+	
 }
 
 var highlight_polygon = function(context, pts) {
@@ -374,7 +371,7 @@ var draw_title = function(context, title, where) {
 	context.appendChild(t_elt);
 }
 
-var draw_details = function(context, countries_graph, options) {
+/*var draw_details = function(context, countries_graph, options) {
 	context.font = map_label_font //TODO: options['map_label_font'] || DEFAULT_MAP_LABEL_FONT;
 	for (citystate in countries_graph) {
 		//console.log(countries_graph[citystate]);
@@ -384,9 +381,9 @@ var draw_details = function(context, countries_graph, options) {
 		var pt;
 		var sum_x = 0;
 		var sum_y = 0;
-		/*iterate integers*/
+		//iterate integers
 		for (var comp=0; comp < polygon.length; comp++) {
-			/*alternate assignment of x, y until no more coords*/
+			//alternate assignment of x, y until no more coords
 			var w = parseInt(polygon[comp]);
 			//console.log(w);
 			if(comp%2==0) {
@@ -407,7 +404,7 @@ var draw_details = function(context, countries_graph, options) {
 		middle.y = (sum_y/(comp/2));
 		draw_title(context, title, middle);
 	}
-}
+}*/
 
 var draw_map = function(context, options) {
 	//console.log(countries_graph)
@@ -423,11 +420,41 @@ var draw_gui = function(context, options) {
 	
 }
 
+/*collate a flat array of numbers into the specification of the 'd' attribute*/
+var d_attr = function(polygon) {
+	var path = '';
+	for (var component=0; component < polygon.length; component++) {
+		//alternate assignment of x, y until no more coords
+		var weight = polygon[component];
+		var vertex = '';
+		//console.log(w);
+			//first vertex is 'move_to' event the rest are 'line_to' events
+			if (component % 2 == 0) {
+				vertex += (component==0)?'M ':'L ';
+			}
+			//spaces separate x,y pairs
+			vertex += weight + ' ';
+		path += vertex;
+	}
+	//connect last vertex to first vertex
+	path += 'z';
+	return path;
+}
+
 /*mainline execution*/
 /*draw map data*/
 var render_loop = function() {
 	draw_map(map_layer, null);
-	draw_details(border_layer, i_states, null);
+	//draw_details(border_layer, i_states, null);
+	var border_layer = d3.select('div').append('svg').attr('width', 2298).attr('height', 1730);
+	_.each(db.getCollection('states').data, function (s) {
+		border_layer.append('path')
+			.attr({'d': d_attr(s.shape),
+				'fill': state_color(s.name), 
+				'stroke': 'blue', 
+				'stroke-width': '1px'
+			});
+	});
 }
 
 /*perform logic calculations for next redraw*/
