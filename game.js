@@ -1,5 +1,6 @@
 /*mainline definitions*/
 const DEFAULT_MAP_LABEL_FONT = "12pt Georgia";
+const SVG_NS = 'http://www.w3.org/2000/svg';
 const RUN_STATE = {
 	CONTINUE: -1,
 	EXIT_NORMAL: 0,
@@ -7,6 +8,8 @@ const RUN_STATE = {
 	EXIT_CRASH: 2,
 	EXIT_KILL: 3
 };
+
+var initialized = false;
 
 var prog_state = RUN_STATE.CONTINUE;
 
@@ -21,12 +24,11 @@ var Turn =  function(values) {
 	this.price = values.price;
 }
 
-
 var Commodity = function(values) {
 	/*what it's called*/
 	this.name=values.name;
 	/*equilibrium price*/
-	this.baseprice=values.baseprice;	
+	this.price=values.price;	
 }
 
 var State = function(values) {
@@ -49,25 +51,34 @@ var Nation = function(values) {
 var gdata = require('./gdata.js');
 var _ = require('lodash');
 var loki = require('lokijs');
+var d3 = require('d3');
+
 var db = new loki('game_data.json');
 var current_turn = first_turn;
 var l_states = db.addCollection('states');
 var l_nations = db.addCollection('nations');
-var l_comms = db.addCollection('commodities');
+var l_commodities = db.addCollection('commodities');
 var l_users = db.addCollection('users');
 var l_turns = db.addCollection('turns');
 var l_market = db.addCollection('market');
 
-var i_states = new gdata.states();
-var i_nations = new gdata.nations();
+//initialization
+var i_states, i_nations, i_commodities;
 
-for (s in i_states) {
-	var s_impl = new State(i_states[s]);
-	l_states.insert(s_impl);
+var init = function() {
+	i_states = new gdata.states();
+	i_nations = new gdata.nations();
+	i_commodities = new gdata.commodities();
+	_.forEach(i_states, function (s) {l_states.insert(new State(s))});
+	_.forEach(i_nations, function (n) {l_nations.insert(new Nation(n))});
+	_.forEach(i_commodities, function (c) {l_commodities.insert(new Commodity(c))});
 }
-for (n in i_nations) {
-	var n_impl = new Nation(i_nations[n]);
-	l_nations.insert(n_impl);
+
+//utils
+var attr = function(elt, map) {
+	for (entry in map) {
+		elt.setAttribute(map[entry][0], map[entry][1]);
+	}
 }
 
 var nation_of_state = function(nations, state) {
@@ -321,25 +332,24 @@ onDocumentKeydown = function(e) {
 }
 
 /*GUI*/
-var map = document.getElementById('map_layer');
-var borders_layer_elt = document.getElementById('border_layer');
-var borders_img = document.getElementById('borders');
+var map_layer = document.getElementById('map_layer');
+//var borders_layer_elt = document.getElementById('border_layer');
+//var borders_img = document.getElementById('borders');
 //var highlights = document.getElementById('highlights');
 var map_label_font = DEFAULT_MAP_LABEL_FONT;
-var map_layer = map.getContext('2d');
-var border_layer = borders_layer_elt.getContext('2d');
+//var map_layer = map.getContext('2d');
+var border_layer = document.getElementById('border_layer');
 //var highlight_layer = hightlights.getContext('2d');
 
 /*draw shapes*/
 var draw_polygon = function(context, pts, options) {
 	//console.log(pts);
-	var n = 0;
-	var p_elt=document.createElement('polygon');
-	p_elt.style['stroke']=options.strokeStyle;
-	p_elt.style['stroke-width']=options.lineWidth;
-	p_elt.style['fill']=state_color(options.id);
-	p_elt.setAttribute('id', options.id);
+	var p_elt=document.createElementNS(SVG_NS, 'polygon');
 	p_elt.setAttribute('points', pts);
+	p_elt.setAttribute('id', options.id);
+	p_elt.style['fill'] = state_color(options.id);
+	p_elt.style['stroke-width'] = options.lineWidth; 
+	p_elt.style['stroke'] = options.strokeStyle;
 	context.appendChild(p_elt);
 }
 
@@ -353,12 +363,13 @@ var unhighlight_polygon = function(context, pts) {
 
 /*draw title*/
 var draw_title = function(context, title, where) {
-	var t_elt = document.createElement('text');
+	var t_elt = document.createElementNS(SVG_NS, 'text');
 	t_elt.style['font']=DEFAULT_MAP_LABEL_FONT; 
 	t_elt.style['fill']='black';
 	t_elt.setAttribute('x', where.x);
 	t_elt.setAttribute('y', where.y);
-	t_elt.innerHTML = title;
+	var txt=document.createTextNode(title);
+	t_elt.appendChild(txt);
 	context.appendChild(t_elt);
 }
 
@@ -400,10 +411,7 @@ var draw_details = function(context, countries_graph, options) {
 var draw_map = function(context, options) {
 	//console.log(countries_graph)
 	//draw background
-	var map_bg = new Image();
-	map_bg.onload = function() {
-			context.drawImage(map_bg,0,0);
-	}		
+	var map_bg = document.getElementById('map_layer');
 	map_bg.src='./germanic_roman_486_1923.jpg';
 	map_bg.alt='Germanic tribes and Rome in 486 A.D.';
 	
@@ -418,7 +426,7 @@ var draw_gui = function(context, options) {
 /*draw map data*/
 var render_loop = function() {
 	draw_map(map_layer, null);
-	draw_details(borders, i_states, null);
+	draw_details(border_layer, i_states, null);
 }
 
 /*perform logic calculations for next redraw*/
@@ -435,10 +443,17 @@ var input_loop = function() {
 	
 }
 
-var mainline = function() {
-	//while(prog_state == RUN_STATE.CONTINUE) {
-		logic_loop();
+var mainline = function(options) {
+	//while(prog_state == RUN_STATE.CONTINUE)
+	try { 
+		init();
+	} catch (ex) {
+		console.error(ex);
+		document.write('Program cannot initialize. \n <a href="https://github.com/i1abnrk/i1abnrk.github.io/issues/">You may report the error.</a>');
+	}
+		initialized = true;
 		render_loop();
+		logic_loop();
 		input_loop();
 	//}
 	//window.exit(prog_state);

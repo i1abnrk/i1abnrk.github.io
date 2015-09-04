@@ -1,30 +1,27 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF8"></meta>
 		<title>Atilla the Hun</title>
 		<style>
-			canvas {
+			img {
 				background-color: transparent;
 				position: absolute;
-				#imap {
+				#map_layer {
 					z-index: 1;
 				}
-				#borders {
-					z-index: 2;
-				}
 			}
-			text {
-				font: 12pt Georgia;
-				color: black;
+			#border_layer {
+				z-index: 2;
+				position: absolute;
 			}
+
 		</style>
 	</head>
 	<body>
 		<div id="viewport">
-			<canvas id="map_layer" width="2298" height="1730"></canvas>
-			<canvas id="border_layer" width="2298" height="1730">
-				<svg id="borders" width="2298" height="1730"></svg>
-			</canvas>
+			<img src="" id="map_layer" alt="#"></img>
+			<svg xmlns="http://www.w3.org/2000/svg" version="1.2" id="border_layer"></svg>
 		<!--<canvas id='highlights" width="2298" height="1730"></canvas>-->
 		</div>
 		<script src="bundle.js"></script>
