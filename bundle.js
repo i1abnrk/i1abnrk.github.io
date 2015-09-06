@@ -117,8 +117,6 @@ var pow = function(x,y){ return Math.pow(x,y); }
 /*Prices are a history graph*/
 /*Prices in a neighbor effect our price*/
 /*Buy and sell price are the same for commodities*/
-var g_commodities = Array();
-var g_states = Array();
 var first_turn = 0;
 /*yeild to maturity per month reduces to a nice constant, right about 1.33*/
 const root_ytm = pow(pow(2,13),pow(12,-1));
@@ -126,8 +124,6 @@ const root_ytm = pow(pow(2,13),pow(12,-1));
 var local_effect = 1.004166667;
 /*1+(2.5%/12) monthly yeild*/
 var global_effect = 1.002083333;
-var commodity_id = 0;
-var state_id = 0;
 
 /*get the price from history*/
 var get_price = function(market, state_id, commodity_id, turn) {
@@ -427,13 +423,13 @@ var d_attr = function(polygon) {
 		//alternate assignment of x, y until no more coords
 		var weight = polygon[component];
 		var vertex = '';
-		//console.log(w);
-			//first vertex is 'move_to' event the rest are 'line_to' events
-			if (component % 2 == 0) {
-				vertex += (component==0)?'M ':'L ';
-			}
-			//spaces separate x,y pairs
-			vertex += weight + ' ';
+		//console.log(weight);
+		//first vertex is 'move_to' event the rest are 'line_to' events
+		if (component % 2 == 0) {
+			vertex += (component==0)?'M ':'L ';
+		}
+		//spaces separate x,y pairs
+		vertex += weight + ' ';
 		path += vertex;
 	}
 	//connect last vertex to first vertex
@@ -446,7 +442,8 @@ var d_attr = function(polygon) {
 var render_loop = function() {
 	draw_map(map_layer, null);
 	//draw_details(border_layer, i_states, null);
-	var border_layer = d3.select('div').append('svg').attr('width', 2298).attr('height', 1730);
+	var border_layer = d3.select('div').append('svg').attr('width', 2298)
+		.attr('height', 1730).style({'background-color':'transparent', 'position': 'absolute', 'z-index': 2});
 	_.each(db.getCollection('states').data, function (s) {
 		border_layer.append('path')
 			.attr({'d': d_attr(s.shape),
@@ -490,6 +487,7 @@ var mainline = function(options) {
 mainline();
 
 module.exports.app=function(options) {return mainline(options);}
+
 
 },{"./gdata.js":2,"d3":3,"lodash":4,"lokijs":6}],2:[function(require,module,exports){
 var Nations_init = [
