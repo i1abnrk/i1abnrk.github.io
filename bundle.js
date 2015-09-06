@@ -334,8 +334,8 @@ var map_label_font = DEFAULT_MAP_LABEL_FONT;
 //var border_layer = document.getElementById('border_layer');
 //var highlight_layer = hightlights.getContext('2d');
 
-/*draw shapes*/
-var draw_polygon = function(context, pts, options) {
+/*draw_polygon @state must have properties {name: string, shape: number array}*/
+var draw_polygon = function(context, state, style) {
 	//console.log(pts);
 	/*var p_elt=document.createElementNS(SVG_NS, 'polygon');
 	p_elt.setAttribute('points', pts);
@@ -344,15 +344,21 @@ var draw_polygon = function(context, pts, options) {
 	p_elt.style['stroke-width'] = options.lineWidth; 
 	p_elt.style['stroke'] = options.strokeStyle;
 	context.appendChild(p_elt);*/
+	context.append('path')
+		.attr({'d': d_attr(state.shape), 'class': 'state', 'id': state.name})
+		.style({'fill': state_color(state.name),
+			'fill-opacity': style.alpha, 
+			'stroke': style.stroke, 
+			'stroke-width': style.lineWidth});
 	
 }
 
-var highlight_polygon = function(context, pts) {
-	draw_polygon(context, pts, {lineWidth: 3, strokeStyle: 'red'});
+var highlight_polygon = function(context, state) {
+	draw_polygon(context, state, {lineWidth: 3, stroke: 'red', alpha: 0.81});
 }
 
-var unhighlight_polygon = function(context, pts) {
-	draw_polygon(context, pts, {lineWidth: 1, strokeStyle: 'blue'});
+var unhighlight_polygon = function(context, state) {
+	draw_polygon(context, state, {lineWidth: 1, stroke: 'blue', alpha: 0.405});
 }
 
 /*draw title*/
@@ -367,41 +373,6 @@ var draw_title = function(context, title, where) {
 	context.appendChild(t_elt);
 }
 
-/*var draw_details = function(context, countries_graph, options) {
-	context.font = map_label_font //TODO: options['map_label_font'] || DEFAULT_MAP_LABEL_FONT;
-	for (citystate in countries_graph) {
-		//console.log(countries_graph[citystate]);
-		var title = countries_graph[citystate].name;
-		var polygon = countries_graph[citystate].shape;
-		var pts = Array();
-		var pt;
-		var sum_x = 0;
-		var sum_y = 0;
-		//iterate integers
-		for (var comp=0; comp < polygon.length; comp++) {
-			//alternate assignment of x, y until no more coords
-			var w = parseInt(polygon[comp]);
-			//console.log(w);
-			if(comp%2==0) {
-				sum_x += w;
-				pt = Array();
-				pt.push(w);
-			} else { 
-				sum_y += w;
-				pt.push(w);
-				pts.push(pt);
-			}
-		}
-		//console.log(pts);
-		//context.fillStyle=state_color(title);
-		draw_polygon(context, pts, {lineWidth: 1, strokeStyle: 'blue', id: countries_graph[citystate].name});
-		var middle=[];
-		middle.x = (sum_x/(comp/2));
-		middle.y = (sum_y/(comp/2));
-		draw_title(context, title, middle);
-	}
-}*/
-
 var get_center = function(shape) {
 	var sum_x=0, sum_y=0;
 	var vertices = _.chunk(shape, 2);
@@ -415,7 +386,25 @@ var get_center = function(shape) {
 	return center;
 }
 
-var draw_map = function(context, options) {
+var draw_details = function(options) {
+	var border_layer = d3.select('div').append('svg')
+		.attr({'width': 2298,'height': 1730})
+		.style({'background-color':'transparent', 'text-align':'center',
+				'position': 'absolute', 'z-index': 2});
+	_.each(db.getCollection('states').data, function (s) {
+		unhighlight_polygon(border_layer, s, options);
+	});
+	_.each(db.getCollection('states').data, function (s) {
+		var center = get_center(s.shape);
+		border_layer.append('text')
+			.attr({'x': center.x, 'y': center.y})
+			.style({'font-family':'Georgia', 'font-size': '12pt', 
+					'fill': 'black', 'text-anchor' : 'middle'})
+			.text(s.name);
+	});
+}
+
+var draw_map = function(options) {
 	//console.log(countries_graph)
 	//draw background
 	var map_bg = document.getElementById('map_layer');
@@ -426,7 +415,8 @@ var draw_map = function(context, options) {
 
 var draw_gui = function(context, options) {
 	/*adjust viewport size to fit screen resolution.*/
-	
+	/*draw a navbar with semi-transparency.*/
+	var navbar = document.createElement('navbar');
 }
 
 /*collate a flat array of numbers into the specification of the 'd' attribute*/
@@ -453,27 +443,9 @@ var d_attr = function(polygon) {
 /*mainline execution*/
 /*draw map data*/
 var render_loop = function() {
-	draw_map(map_layer, null);
+	draw_map();
 	//draw_details(border_layer, i_states, null);
-	var border_layer = d3.select('div').append('svg').attr('width', 2298)
-		.attr('height', 1730)
-		.style({'background-color':'transparent', 
-				'position': 'absolute', 'z-index': 2});
-	_.each(db.getCollection('states').data, function (s) {
-		border_layer.append('path')
-			.attr({'d': d_attr(s.shape), 'class': 'state', 'id': s.name})
-			.style({'fill': state_color(s.name), 
-					'stroke': 'blue', 
-					'stroke-width': '1px'});		
-	});
-	_.each(db.getCollection('states').data, function (s) {
-		var center = get_center(s.shape);
-		border_layer.append('text')
-			.attr({'x': center.x, 'y': center.y})
-			.style({'font-family':'Georgia', 'font-size': '12pt', 
-					'fill': 'black', 'text-align':'center'})
-			.text(s.name);
-	});
+	draw_details();
 }
 
 /*perform logic calculations for next redraw*/
@@ -514,87 +486,87 @@ module.exports.app=function(options) {return mainline(options);}
 },{"./gdata.js":2,"d3":3,"lodash":4,"lokijs":6}],2:[function(require,module,exports){
 var Nations_init = [
 	{	name: 'Slavs',
-		color: 'rgba(255,0,0,0.405)',
+		color: 'rgb(255,0,0)',
 		demonym: 'Slavs',
 		states:	['Moscva', 'Minsk', 'Kiev']
 	},
 	{	name: 'Ostrogoths',
-		color: 'rgba(0,127,127,0.405)',
+		color: 'rgb(0,127,127)',
 		demonym: 'Ostrogoths',
 		states: ['Wien', 'Praha', 'Buda', 'Bucharest']
 	},
 	{	name: 'Byzantium',
-		color: 'rgba(0,255,0,0.405)',
+		color: 'rgb(0,255,0)',
 		demonym: 'Byzantines',
 		states: ['Byzant', 'Thessaly', 'Tirane', 'Athenai', 'Beograta']
 	},
 	{	name: 'Scandanavia',
-		color: 'rgba(127,0,127,0.405)',
+		color: 'rgb(127,0,127)',
 		demonym: 'Scandanavians',
 		states: ['Copenhagen', 'Oslo', 'Stockholm', 'Riga']
 	},
 	{	name: 'Prussia',
-		color: 'rgba(0,0,255,0.405)',
+		color: 'rgb(0,0,255)',
 		demonym: 'Prussian',
 		states: ['Gdansk', 'Warsawa', 'Berlin']
 	},
 	{	name: 'Alemania',
-		color: 'rgba(63,191,0,0.405)',
+		color: 'rgb(63,191,0)',
 		demonym: 'Alemanians',
 		states: ['Zurich', 'Frankfort', 'Munchen']
 	},
 	{	name: 'Saxony',
-		color: 'rgba(255,255,255,0.405)',
+		color: 'rgb(255,255,255)',
 		demonym: 'Saxons',
 		states: ['Friesland','Hanover','Hamburg', 'London', 'Kent']
 	},
 	{	name: 'Frank Kingdom',
-		color: 'rgba(191,63,63,0.405)',
+		color: 'rgb(191,63,63)',
 		demonym: 'Franks',
 		states: ['Orleans','Paris','Brux','Koln']
 	},
 	{	name: 'Keltoi',
-		color: 'rgba(63,191,63,0.405)',
+		color: 'rgb(63,191,63)',
 		demonym: 'Gaels',
 		states: ['York','Cardiff','Brest','Eire']
 	},
 	{	name: 'Aquitaine',
-		color: 'rgba(63,63,191,0.405)',
+		color: 'rgb(63,63,191)',
 		demonym: 'Goths',
 		states: ['Borges','Bordo','Narbon']
 	},
 	{	name: 'Catalonia',
-		color: 'rgba(191,191,191,0.405)',
+		color: 'rgb(191,191,191)',
 		demonym: 'Visigoths',
 		states: ['Barca','Toled','Madrid','Cordoba']
 	},
 	{	name: 'Gallicia',
-		color: 'rgba(63,127,127,0.405)',
+		color: 'rgb(63,127,127)',
 		demonym: 'Gallicians',
 		states: ['Gallicia','Lisboa']
 	},
 	{	name: 'Burgundy',
-		color: 'rgba(127,0,63,0.405)',
+		color: 'rgb(127,0,63)',
 		demonym: 'Burgundians',
 		states: ['Geneva', 'Leon', 'Marseille']
 	},
 	{	name: 'Picti',
-		color: 'rgba(0,208,48,0.405)',
+		color: 'rgb(0,208,48)',
 		demonym: 'Picts',
 		states: ['Picti']
 	},
 	{	name: 'Maurtania',
-		color: 'rgba(0,191,127,0.405)',
+		color: 'rgb(0,191,127)',
 		demonym: 'Vandals',
 		states: ['Balaerica','Sardine']
 	},
 	{	name: 'Latium',
-		color: 'rgba(192,144,63,0.405)',
+		color: 'rgb(192,144,63)',
 		demonym: 'Romans',
 		states: ['Genoa', 'Milano', 'Ravenna', 'Roma', 'Napoli', 'Siracusa']
 	},
 	{	name: 'Moesia',
-		color: 'rgba(128, 64, 91, 0.405)',
+		color: 'rgb(128, 64, 91)',
 		demonym: 'Alans',
 		states: ['Odessa', 'Sevastopol']
 	}

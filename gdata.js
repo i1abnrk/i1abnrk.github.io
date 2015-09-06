@@ -1,86 +1,86 @@
 var Nations_init = [
 	{	name: 'Slavs',
-		color: 'rgba(255,0,0,0.405)',
+		color: 'rgb(255,0,0)',
 		demonym: 'Slavs',
 		states:	['Moscva', 'Minsk', 'Kiev']
 	},
 	{	name: 'Ostrogoths',
-		color: 'rgba(0,127,127,0.405)',
+		color: 'rgb(0,127,127)',
 		demonym: 'Ostrogoths',
 		states: ['Wien', 'Praha', 'Buda', 'Bucharest']
 	},
 	{	name: 'Byzantium',
-		color: 'rgba(0,255,0,0.405)',
+		color: 'rgb(0,255,0)',
 		demonym: 'Byzantines',
 		states: ['Byzant', 'Thessaly', 'Tirane', 'Athenai', 'Beograta']
 	},
 	{	name: 'Scandanavia',
-		color: 'rgba(127,0,127,0.405)',
+		color: 'rgb(127,0,127)',
 		demonym: 'Scandanavians',
 		states: ['Copenhagen', 'Oslo', 'Stockholm', 'Riga']
 	},
 	{	name: 'Prussia',
-		color: 'rgba(0,0,255,0.405)',
+		color: 'rgb(0,0,255)',
 		demonym: 'Prussian',
 		states: ['Gdansk', 'Warsawa', 'Berlin']
 	},
 	{	name: 'Alemania',
-		color: 'rgba(63,191,0,0.405)',
+		color: 'rgb(63,191,0)',
 		demonym: 'Alemanians',
 		states: ['Zurich', 'Frankfort', 'Munchen']
 	},
 	{	name: 'Saxony',
-		color: 'rgba(255,255,255,0.405)',
+		color: 'rgb(255,255,255)',
 		demonym: 'Saxons',
 		states: ['Friesland','Hanover','Hamburg', 'London', 'Kent']
 	},
 	{	name: 'Frank Kingdom',
-		color: 'rgba(191,63,63,0.405)',
+		color: 'rgb(191,63,63)',
 		demonym: 'Franks',
 		states: ['Orleans','Paris','Brux','Koln']
 	},
 	{	name: 'Keltoi',
-		color: 'rgba(63,191,63,0.405)',
+		color: 'rgb(63,191,63)',
 		demonym: 'Gaels',
 		states: ['York','Cardiff','Brest','Eire']
 	},
 	{	name: 'Aquitaine',
-		color: 'rgba(63,63,191,0.405)',
+		color: 'rgb(63,63,191)',
 		demonym: 'Goths',
 		states: ['Borges','Bordo','Narbon']
 	},
 	{	name: 'Catalonia',
-		color: 'rgba(191,191,191,0.405)',
+		color: 'rgb(191,191,191)',
 		demonym: 'Visigoths',
 		states: ['Barca','Toled','Madrid','Cordoba']
 	},
 	{	name: 'Gallicia',
-		color: 'rgba(63,127,127,0.405)',
+		color: 'rgb(63,127,127)',
 		demonym: 'Gallicians',
 		states: ['Gallicia','Lisboa']
 	},
 	{	name: 'Burgundy',
-		color: 'rgba(127,0,63,0.405)',
+		color: 'rgb(127,0,63)',
 		demonym: 'Burgundians',
 		states: ['Geneva', 'Leon', 'Marseille']
 	},
 	{	name: 'Picti',
-		color: 'rgba(0,208,48,0.405)',
+		color: 'rgb(0,208,48)',
 		demonym: 'Picts',
 		states: ['Picti']
 	},
 	{	name: 'Maurtania',
-		color: 'rgba(0,191,127,0.405)',
+		color: 'rgb(0,191,127)',
 		demonym: 'Vandals',
 		states: ['Balaerica','Sardine']
 	},
 	{	name: 'Latium',
-		color: 'rgba(192,144,63,0.405)',
+		color: 'rgb(192,144,63)',
 		demonym: 'Romans',
 		states: ['Genoa', 'Milano', 'Ravenna', 'Roma', 'Napoli', 'Siracusa']
 	},
 	{	name: 'Moesia',
-		color: 'rgba(128, 64, 91, 0.405)',
+		color: 'rgb(128, 64, 91)',
 		demonym: 'Alans',
 		states: ['Odessa', 'Sevastopol']
 	}
