@@ -353,24 +353,31 @@ var draw_polygon = function(context, state, style) {
 	
 }
 
-var highlight_polygon = function(context, state) {
-	draw_polygon(context, state, {lineWidth: 3, stroke: 'red', alpha: 0.81});
+var highlight_polygon = function(state_name) {
+	d3.select('#'+state_name).style({'stroke-width': '3', 'stroke': 'red', 'fill-opacity': '0.81'});
 }
 
-var unhighlight_polygon = function(context, state) {
-	draw_polygon(context, state, {lineWidth: 1, stroke: 'blue', alpha: 0.405});
+var unhighlight_polygon = function(state_name) {
+	d3.select('#'+state_name).style({'stroke-width': '1', 'stroke': 'blue', 'fill-opacity': '0.4'});
 }
 
 /*draw title*/
-var draw_title = function(context, title, where) {
+var draw_title = function(context, output, where) {
+	/*
 	var t_elt = document.createElementNS(SVG_NS, 'text');
 	t_elt.style['font']=DEFAULT_MAP_LABEL_FONT; 
 	t_elt.style['fill']='black';
 	t_elt.setAttribute('x', where.x);
 	t_elt.setAttribute('y', where.y);
-	var txt=document.createTextNode(title);
+	var txt=document.createTextNode(state_name);
 	t_elt.appendChild(txt);
 	context.appendChild(t_elt);
+	*/
+	context.append('text')
+			.attr({'x': where.x, 'y': where.y})
+			.style({'font-family':'Georgia', 'font-size': '12pt', 
+					'fill': 'black', 'text-anchor' : 'middle'})
+			.text(output);
 }
 
 var get_center = function(shape) {
@@ -387,21 +394,19 @@ var get_center = function(shape) {
 }
 
 var draw_details = function(options) {
+	var states = db.getCollection('states').data;
 	var border_layer = d3.select('div').append('svg')
 		.attr({'width': 2298,'height': 1730})
 		.style({'background-color':'transparent', 'text-align':'center',
 				'position': 'absolute', 'z-index': 2});
-	_.each(db.getCollection('states').data, function (s) {
-		unhighlight_polygon(border_layer, s, options);
+	_.each(states, function (s) {
+		draw_polygon(border_layer, s, {'stroke':'blue', 'stroke-width': '1px', 'alpha': '0.4'});
 	});
-	_.each(db.getCollection('states').data, function (s) {
-		var center = get_center(s.shape);
-		border_layer.append('text')
-			.attr({'x': center.x, 'y': center.y})
-			.style({'font-family':'Georgia', 'font-size': '12pt', 
-					'fill': 'black', 'text-anchor' : 'middle'})
-			.text(s.name);
+	_.each(states, function (s) {
+		draw_title(border_layer, s.name, get_center(s.shape));
 	});
+	map_event_handler();
+
 }
 
 var draw_map = function(options) {
@@ -411,6 +416,17 @@ var draw_map = function(options) {
 	map_bg.src='./germanic_roman_486_1923.jpg';
 	map_bg.alt='Germanic tribes and Rome in 486 A.D.';
 	
+}
+
+var map_event_handler = function() {
+	d3.selectAll('path').on({
+		mouseenter: function() {
+			highlight_polygon(this.id);
+		},
+		mouseleave: function() {
+			unhighlight_polygon(this.id);		
+		}
+	});
 }
 
 var draw_gui = function(context, options) {
@@ -446,6 +462,7 @@ var render_loop = function() {
 	draw_map();
 	//draw_details(border_layer, i_states, null);
 	draw_details();
+	map_event_handler();
 }
 
 /*perform logic calculations for next redraw*/
