@@ -401,6 +401,19 @@ var draw_title = function(context, title, where) {
 	}
 }*/
 
+var get_center = function(shape) {
+	var sum_x=0, sum_y=0;
+	var vertices = _.chunk(shape, 2);
+	_.each(vertices, 
+		function(vertex) {
+			sum_x += vertex[0];
+			sum_y += vertex[1];
+		});
+	var center = {x: sum_x/vertices.length,
+			y: sum_y/vertices.length};
+	return center;
+}
+
 var draw_map = function(context, options) {
 	//console.log(countries_graph)
 	//draw background
@@ -442,14 +455,23 @@ var render_loop = function() {
 	draw_map(map_layer, null);
 	//draw_details(border_layer, i_states, null);
 	var border_layer = d3.select('div').append('svg').attr('width', 2298)
-		.attr('height', 1730).style({'background-color':'transparent', 'position': 'absolute', 'z-index': 2});
+		.attr('height', 1730)
+		.style({'background-color':'transparent', 
+				'position': 'absolute', 'z-index': 2});
 	_.each(db.getCollection('states').data, function (s) {
 		border_layer.append('path')
-			.attr({'d': d_attr(s.shape),
-				'fill': state_color(s.name), 
-				'stroke': 'blue', 
-				'stroke-width': '1px'
-			});
+			.attr({'d': d_attr(s.shape), 'class': 'state', 'id': s.name})
+			.style({'fill': state_color(s.name), 
+					'stroke': 'blue', 
+					'stroke-width': '1px'});		
+	});
+	_.each(db.getCollection('states').data, function (s) {
+		var center = get_center(s.shape);
+		border_layer.append('text')
+			.attr({'x': center.x, 'y': center.y})
+			.style({'font-family':'Georgia', 'font-size': '12pt', 
+					'fill': 'black', 'text-align':'center'})
+			.text(s.name);
 	});
 }
 
