@@ -4,16 +4,20 @@ const DEFAULT_MAP_LABEL_FONT = "12pt Georgia";
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 const MODE = {
-	INFO: 1
+	INFO: 1,
+	EXIT: 2
 }
 
 const FIRST_TURN = {month: 1, year: 475}
+const SPY_TIMEOUT = 12;
 
 var initialized = false;
 
 var game_mode = MODE.INFO;
 
 var game_clock = FIRST_TURN;
+
+var selected_state = '';
 
 /*A Turn is the unit measure of the market.*/
 var Turn =  function(values) {
@@ -53,6 +57,34 @@ var Nation = function(values) {
 	this.demonym = values.demonym;
 }
 
+/*Emperor represents the player*/
+var Emperor = function(values) {
+	//state, time pairs
+	var last_spy={};
+	this.name = values.name;
+	this.nation = values.nation;
+	
+	for (n in db.getCollection('nations').data) {
+		nname = n.name;
+		last_spy.nname = FIRST_TURN;
+	}
+
+	var get_last_spy = function(state) {
+		//if this is our kingdom, we have spy now
+		if(this.nation == nation_of_state(state)) {
+			return game_clock;
+		}
+		//elseif no entry, return first turn
+		//else return last_spy.Nation
+		else {
+			return last_spy.nation;
+		}
+	}
+	var send_spy = function(state) {
+
+	}
+}
+
 var gdata = require('./gdata.js');
 var econ = require('./microeconomics.js');
 var _ = require('lodash');
@@ -63,7 +95,7 @@ var db = new loki('game_data.json');
 var l_states = db.addCollection('states');
 var l_nations = db.addCollection('nations');
 var l_commodities = db.addCollection('commodities');
-var l_users = db.addCollection('users');
+var l_player = db.addCollection('player');
 var l_turns = db.addCollection('history', {indices: ['year', 'month', 'state', 'commodity']});
 var l_market = db.addCollection('market');
 
@@ -74,6 +106,7 @@ var init = function() {
 	_.each(i_states, function (s) {l_states.insert(new State(s))});
 	_.each(i_nations, function (n) {l_nations.insert(new Nation(n))});
 	_.each(i_commodities, function (c) {l_commodities.insert(new Commodity(c))});
+	l_player.insert(new Emperor({name:'Atilla', nation:'Hun'}));
 }
 
 //utils
@@ -244,16 +277,33 @@ var draw_map = function(options) {
 var map_event_handler = function() {
 	d3.selectAll('path').on({
 		mouseenter: function() {
-			highlight_polygon(this.id);
-		},
-		mouseleave: function() {
-			unhighlight_polygon(this.id);		
-		}/*,
-		click: function() {
-			switch(click_mode) {
-				
+			if (selected_state != this.id) {
+				highlight_polygon(this.id);
 			}
-		}*/
+			return;
+		},			
+		mouseleave: function() {
+			if (selected_state != this.id) {
+				unhighlight_polygon(this.id);
+			}
+			return;	
+		},
+		click: function() {
+			switch(game_mode) {
+				case MODE.INFO:
+					//show known info in a pop up
+					if (selected_state == this.id) {
+						selected_state = '';
+					} else {
+						if (selected_state != '') {
+							unhighlight_polygon(selected_state);
+						}
+						selected_state = this.id;
+					}
+					break;
+			}
+			return;
+		}
 	});
 }
 
@@ -277,7 +327,6 @@ var render_loop = function() {
 /*perform logic calculations for next redraw*/
 var logic_loop = function() {
 	//console.log(l_states.find('Eire'));
-	
 }
 
 /*wait for user input, process events in realtime*/
