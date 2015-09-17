@@ -87,6 +87,7 @@ var Nations_init = [
 ];
 
 var States_init = [
+	/*spaces in names will break the id attributes*/
 	{	name: 'Eire',
 		shape: [233, 456, 235, 385, 305, 284, 412, 261, 439, 297, 448, 345, 380, 449, 291, 463, 291, 463],
 		ppl: 5500,

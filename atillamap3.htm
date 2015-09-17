@@ -3,22 +3,72 @@
 	<head>
 		<meta http-equiv="content-type" content="text/html; charset=UTF8"></meta>
 		<title>Atilla the Hun</title>
-		<style>
-			img {
-				background-color: transparent;
-				position: absolute;
-				#map_layer {
-					z-index: 1;
-				}
-			}
-		</style>
+		<link rel="stylesheet" type="text/css" href="main.css"></link>
 	</head>
 	<body>
+		<header>	
+			<nav id="nav" class="clearfix">
+				<ul>
+					<li id="save"><a href="#">save</a></li>
+					<li id="load"><a href="#">load</a></li>
+					<li id="info"><a href="#">info</a></li>
+					<li id="attack"><a href="#">attack</a></li>
+					<li id="buy"><a href="#">buy</a></li>
+					<li id="sell"><a href="#">sell</a></li>
+					<li id="give"><a href="#">give</a></li>
+					<li id="send"><a href="#">send</a></li>
+					<li id="spy"><a href="#">spy</a></li>
+					<li id="end_turn"><a href="#">end turn</a></li>
+					<li id="show_help"><a href="#">?</a></li>
+				</ul>
+			</nav>
+		</header>
 		<div id="viewport">
 			<img src="" id="map_layer" alt="#"></img>
 			<!--<svg xmlns="http://www.w3.org/2000/svg" version="1.2" id="border_layer"></svg>-->
 			<!--<canvas id='highlights" width="2298" height="1730"></canvas>-->
+
+			<!-- info_panel block (corresponds to edit_details)-->
+			<!--<div id="info_panel">
+				<h5>Attributes</h5>
+				<span class="close_button" title="close"></span>
+				<p>
+					<label for="href_attr">href</label>
+					<input type="text" id="href_attr" />
+				</p>
+				<p>
+					<label for="alt_attr">alt</label>
+					<input type="text" id="alt_attr" />
+				</p>
+				<p>
+					<label for="title_attr">title</label>
+					<input type="text" id="title_attr" />
+				</p>
+				<button id="save_details">Save</button>
+			</form>-->
+	<!-- Help block -->
+		<!--<div id="overlay"></div>
+		<div id="help">
+			<span class="close_button" title="close"></span>
+			<div class="txt">
+				<section>
+					<h2>Map</h2>
+					<p><span class="key">W</span> &mdash; scroll the map toward North</p>
+					<p><span class="key">A</span> &mdash; scroll the map toward West</p>
+					<p><span class="key">S</span> &mdash; scroll the map toward South</p>
+					<p><span class="key">D</span> &mdash; scroll the map toward East</p>
+					<p><span class="key">Q</span> &mdash; zoom the map larger (more detail)</p>
+					<p><span class="key">E</span> &mdash; zoom the map smaller (less detail)</p>
+				</section>
+			</div>
+			<footer>
+				<a href="http://github.com/i1abnrk/i1abnrk.github.io/">Atilla the Hun, version 0.0.1</a><br />
+				&copy; 2015 Zakri Kneebone<br />
+				AGPLv3 License
+			</footer>
+			</div>-->
 		</div>
+
 		<script src="bundle.js"></script>
 	</body>
 </html>

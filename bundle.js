@@ -4,12 +4,108 @@ const DEFAULT_MAP_LABEL_FONT = "12pt Georgia";
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 const MODE = {
+	EXIT: 0,
 	INFO: 1,
-	EXIT: 2
+	ATTACK: 2,
+	BUY: 3,
+	SELL: 4,
+	GIVE: 5,
+	SEND: 6,
+	SPY: 7,
+	SAVE: 16,
+	LOAD: 17
 }
 
 const FIRST_TURN = {month: 1, year: 475}
 const SPY_TIMEOUT = 12;
+var lbl_pfx = 'lbl_';
+
+var utils = {
+		offsetX : function(node) {
+			var box = node.getBoundingClientRect(),
+				scroll = window.pageXOffset;
+				
+			return Math.round(box.left + scroll);
+		},
+		offsetY : function(node) { 
+			var box = node.getBoundingClientRect(),
+				scroll = window.pageYOffset;
+				
+			return Math.round(box.top + scroll);
+		},
+		rightX : function(x) {
+			return x-app.getOffset('x');
+		},
+		rightY : function(y) {
+			return y-app.getOffset('y');
+		},
+		trim : function(str) {
+			return str.replace(/^\s+|\s+$/g, '');
+		},
+		id : function (str) {
+			return d3.select('#' + str);
+		},
+		hide : function(node) {
+			node.style('display', 'none');
+			
+			return this;
+		},
+		show : function(node) {
+			node.style('display', 'block');
+			
+			return this;
+		},
+		encode : function(str) {
+			return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		},
+		stopEvent : function(e) {
+			e.stopPropagation();
+			e.preventDefault();
+			
+			return this;
+		},
+		addClass : function(node, str) {
+			// node.className.baseVal for SVG-elements
+			// or
+			// node.className for HTML-elements
+			node.classed('str', true);
+			
+			return this;
+		},
+		removeClass : function(node, str) {
+			node.classed('str', false);
+			
+			return this;
+		},
+		hasClass : function(node, str) {
+			var is_svg = node.className.baseVal !== undefined ? true : false,
+				arr = is_svg ? node.className.baseVal.split(' ') : node.className.split(' '),
+				isset = false;
+				
+			utils.foreach(arr, function(x) {
+				if(x === str) {
+					isset = true;
+				}
+			});
+			
+			return isset;
+		},
+		extend : function(obj, options) {
+			var target = {};
+			
+			for (name in obj) {
+				if(obj.hasOwnProperty(name)) {
+					target[name] = options[name] ? options[name] : obj[name];
+				}
+			}
+			
+			return target;
+		},
+		supportFileReader : (function() {
+			return (typeof FileReader !== 'undefined');
+		})()
+	};
+	
 
 var initialized = false;
 
@@ -205,7 +301,7 @@ onDocumentKeydown = function(e) {
 }
 
 /*GUI*/
-var map_layer = document.getElementById('map_layer');
+var map_layer = utils.id('map_layer');
 var map_label_font = DEFAULT_MAP_LABEL_FONT;
 
 /*draw_polygon @state must have properties {name: string, shape: number array}*/
@@ -231,7 +327,7 @@ var unhighlight_polygon = function(state_name) {
 /*draw title*/
 var draw_title = function(context, output, where) {
 	context.append('text')
-			.attr({'x': where.x, 'y': where.y})
+			.attr({'x': where.x, 'y': where.y, 'id': lbl_pfx + output})
 			.style({'font-family':'Georgia', 'font-size': '12pt', 
 					'fill': 'black', 'text-anchor' : 'middle'})
 			.text(output);
@@ -305,15 +401,45 @@ var map_event_handler = function() {
 			return;
 		}
 	});
+
+	d3.selectAll('text').on({
+			mouseenter: function() {
+			//parent, or id of the path element this label is upon displayed
+				if (selected_state != this.id.substring(lbl_pfx.length, this.id.length)) {
+					highlight_polygon(this.id.substring(lbl_pfx.length, this.id.length));
+				}
+				return;
+			},			
+			mouseleave: function() {
+				if (selected_state != this.id.substring(lbl_pfx.length, this.id.length)) {
+					unhighlight_polygon(this.id.substring(lbl_pfx.length, this.id.length));
+				}
+				return;	
+			},
+			click: function() {
+				switch(game_mode) {
+					case MODE.INFO:
+						//show known info in a pop up
+						if (selected_state == this.id.substring(lbl_pfx.length, this.id.length)) {
+							selected_state = '';
+						} else {
+							if (selected_state != '') {
+								unhighlight_polygon(selected_state);
+							}
+							selected_state = this.id.substring(lbl_pfx.length, this.id.length);
+						}
+						break;
+				}
+				return;
+			}
+		});
 }
 
 var draw_gui = function(context, options) {
 	/*adjust viewport size to fit screen resolution.*/
 	/*draw a navbar with semi-transparency.*/
-	var navbar = document.createElement('navbar');
+	var viewport = d3.select('#viewport');
 }
-
-
 
 /*mainline execution*/
 /*draw map data*/
@@ -322,11 +448,13 @@ var render_loop = function() {
 	//draw_details(border_layer, i_states, null);
 	draw_details();
 	map_event_handler();
+	draw_gui();
 }
 
 /*perform logic calculations for next redraw*/
 var logic_loop = function() {
 	//console.log(l_states.find('Eire'));
+	
 }
 
 /*wait for user input, process events in realtime*/
@@ -353,10 +481,11 @@ var mainline = function(options) {
 	//window.exit(prog_state);
 }
 
-mainline();
+var app = function(options) { mainline(options); }
 
-module.exports.app=function(options) {return mainline(options);}
+app();
 
+module.exports.app=function(options) {return this.app(options);}
 
 },{"./gdata.js":2,"./microeconomics.js":3,"d3":4,"lodash":5,"lokijs":7}],2:[function(require,module,exports){
 var Nations_init = [
@@ -448,6 +577,7 @@ var Nations_init = [
 ];
 
 var States_init = [
+	/*spaces in names will break the id attributes*/
 	{	name: 'Eire',
 		shape: [233, 456, 235, 385, 305, 284, 412, 261, 439, 297, 448, 345, 380, 449, 291, 463, 291, 463],
 		ppl: 5500,
