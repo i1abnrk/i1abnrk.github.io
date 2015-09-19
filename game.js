@@ -322,12 +322,12 @@ var draw_polygon = function(context, state, style) {
 }
 
 var highlight_polygon = function(state_name) {
-	d3.select('#'+state_name)
+	utils.id(state_name)
 		.style({'stroke-width': '3', 'stroke': 'red', 'fill-opacity': '0.81'});
 }
 
 var unhighlight_polygon = function(state_name) {
-	d3.select('#'+state_name)
+	utils.id(state_name)
 		.style({'stroke-width': '1', 'stroke': 'blue', 'fill-opacity': '0.4'});
 }
 
@@ -467,11 +467,11 @@ var show_info = function(state_name) {
 	info_text += '</table>';		
 	//display in a popup
 	var ip = utils.id('info_panel');
-	var ip_head = ip.select('h5').append()
+	var ip_head = ip.select('h5')
 		.attr()
 		.style({'color': state_color(state_name)})
 		.text(state_name);
-	var ip_body = ip.select('.txt').append()
+	var ip_body = ip.select('.txt')
 		.attr()
 		.style()
 		.text(info_text);
