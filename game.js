@@ -114,11 +114,16 @@ var game_clock = FIRST_TURN;
 
 var selected_state = '';
 
-/*A Turn is the unit measure of the market.*/
+/*A Turn is the frame of the market for procedural generation.
+ *Note: this.commodity.price is the static _base_ price, while this.price is the
+ *		dynamic current price.*/
 var Turn =  function(values) {
 	this.year = values.year;
 	this.month = values.month;
+
+	//foreign key --> State.name
 	this.state = values.state;
+	//foreign key --> Commodity.name
 	this.commodity = values.commodity;
 	this.initial = values.initial;
 	this.produced = values.produced;
@@ -164,17 +169,6 @@ var Emperor = function(values) {
 		last_spy.nname = FIRST_TURN;
 	}
 
-	var get_last_spy = function(state) {
-		//if this is our kingdom, we have spy now
-		if(this.nation == nation_of_state(state)) {
-			return game_clock;
-		}
-		//elseif no entry, return first turn
-		//else return last_spy.Nation
-		else {
-			return last_spy.nation;
-		}
-	}
 	var send_spy = function(state) {
 
 	}
@@ -191,13 +185,16 @@ var l_states = db.addCollection('states');
 var l_nations = db.addCollection('nations');
 var l_commodities = db.addCollection('commodities');
 var l_player = db.addCollection('player');
-var l_turns = db.addCollection('history', {indices: ['year', 'month', 'state', 'commodity']});
+var l_history = db.addCollection('history', {indices: ['year', 'month', 'state', 'commodity']});
 var l_market = db.addCollection('market');
 
 var init = function() {
 	var i_states = new gdata.states();
 	var i_nations = new gdata.nations();
 	var i_commodities = new gdata.commodities();
+	l_states.ensureUniqueIndex('name');
+	l_nations.ensureUniqueIndex('name');
+	l_commodities.ensureUniqueIndex('name');
 	_.each(i_states, function (s) {l_states.insert(new State(s))});
 	_.each(i_nations, function (n) {l_nations.insert(new Nation(n))});
 	_.each(i_commodities, function (c) {l_commodities.insert(new Commodity(c))});
@@ -261,6 +258,17 @@ var state_color = function(state) {
 }
 
 
+var get_last_spy = function(nation, state) {
+	//if this is our kingdom, we have spy now
+	if(nation == nation_of_state(state)) {
+		return game_clock;
+	}
+	//elseif no entry, return first turn
+	//else return last_spy.Nation
+	else {
+		return last_spy.nation;
+	}
+}
 /*submodule definitions*/
 //console.log(i_data[0]);
 
@@ -394,6 +402,7 @@ var map_event_handler = function() {
 							unhighlight_polygon(selected_state);
 						}
 						selected_state = this.id;
+						show_info(this.id);
 					}
 					break;
 			}
@@ -426,6 +435,7 @@ var map_event_handler = function() {
 								unhighlight_polygon(selected_state);
 							}
 							selected_state = this.id.substring(lbl_pfx.length, this.id.length);
+							show_info(this.id.substring(lbl_pfx.length, this.id.length));
 						}
 						break;
 				}
@@ -440,13 +450,45 @@ var draw_gui = function(context, options) {
 	var viewport = d3.select('#viewport');
 }
 
+var show_info = function(state_name) {
+	//calculate data to display
+	var info_turn = get_last_spy(l_player.data.nation, state_name);
+	var info_text = '<table><th>last updated: '+info_turn.month+'.'+info_turn.year+'</th>\n';
+	var info_dataset = l_history.find({'$and': [
+			{year: info_turn.year}, 
+			{month: info_turn.month},
+			{name: state_name}
+		]});
+	_.each(info_dataset, function (commodity) {
+		info_text += '<tr><td>' + commodity.data.commodity + '</td><td>' 
+				+ commodity.data.initial + '</td><td>' 
+				+ commodity.data.remark + '</td></tr>\n';
+	});
+	info_text += '</table>';		
+	//display in a popup
+	var ip = utils.id('info_panel');
+	var ip_head = ip.select('h5').append()
+		.attr()
+		.style({'color': state_color(state_name)})
+		.text(state_name);
+	var ip_body = ip.select('.txt').append()
+		.attr()
+		.style()
+		.text(info_text);
+	var close_button = ip.select('.close_button').on({
+		click: function() {
+			utils.hide(ip);		
+		}
+	});
+	utils.show(ip);
+}
+
 /*mainline execution*/
 /*draw map data*/
 var render_loop = function() {
 	draw_map();
 	//draw_details(border_layer, i_states, null);
 	draw_details();
-	map_event_handler();
 	draw_gui();
 }
 
@@ -459,7 +501,7 @@ var logic_loop = function() {
 /*wait for user input, process events in realtime*/
 var input_loop = function() {
 	/*enable direct input queue*/
-	
+	map_event_handler();
 	/*enable indirect input queue while processing or exit*/
 	
 }
@@ -473,9 +515,12 @@ var mainline = function(options) {
 		document.write('Program cannot initialize. \n <a href="https://github.com/i1abnrk/i1abnrk.github.io/issues/">You may report the error.</a>');
 	}
 		initialized = true;
+		//display client view
 		render_loop();
-		logic_loop();
+		//register event-listener controllers
 		input_loop();
+		//after end_turn: update data model
+		logic_loop();
 	//}
 	//window.exit(prog_state);
 }

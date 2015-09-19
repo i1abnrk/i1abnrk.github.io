@@ -83,6 +83,11 @@ var Nations_init = [
 		color: 'rgb(128, 64, 91)',
 		demonym: 'Alans',
 		states: ['Odessa', 'Sevastopol']
+	},
+	{	name: 'Hun',
+		color: 'rbg(64,64,64)',
+		demonym: 'Huns',
+		states: []
 	}
 ];
 
