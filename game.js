@@ -81,7 +81,7 @@ var utils = {
 				arr = is_svg ? node.className.baseVal.split(' ') : node.className.split(' '),
 				isset = false;
 				
-			utils.foreach(arr, function(x) {
+			_.each(arr, function(x) {
 				if(x === str) {
 					isset = true;
 				}
@@ -185,8 +185,7 @@ var l_states = db.addCollection('states');
 var l_nations = db.addCollection('nations');
 var l_commodities = db.addCollection('commodities');
 var l_player = db.addCollection('player');
-var l_history = db.addCollection('history', {indices: ['year', 'month', 'state', 'commodity']});
-var l_market = db.addCollection('market');
+var l_market = db.addCollection('market', {indices: ['year', 'month', 'state', 'commodity']});
 
 var init = function() {
 	var i_states = new gdata.states();
@@ -199,6 +198,22 @@ var init = function() {
 	_.each(i_nations, function (n) {l_nations.insert(new Nation(n))});
 	_.each(i_commodities, function (c) {l_commodities.insert(new Commodity(c))});
 	l_player.insert(new Emperor({name:'Atilla', nation:'Hun'}));
+	//market initial state
+	_.each(i_states, function(s) {
+		_.each(i_commodities, function(c) {
+			l_market.insert(new Turn({
+				year: game_clock.year, 
+				month: game_clock.month,
+				state: s.name,
+				commodity: c.name,
+				initial: 0,
+				produced: 0,
+				used: 0,
+				price: c.price,
+				remark: 'first turn'
+			}));
+		});	
+	});
 }
 
 //utils
@@ -365,7 +380,6 @@ var draw_details = function(options) {
 	_.each(states, function (s) {
 		draw_title(border_layer, s.name, get_center(s.shape));
 	});
-	map_event_handler();
 }
 
 var draw_map = function(options) {
@@ -453,18 +467,21 @@ var draw_gui = function(context, options) {
 var show_info = function(state_name) {
 	//calculate data to display
 	var info_turn = get_last_spy(l_player.data.nation, state_name);
-	var info_text = '<table><th>last updated: '+info_turn.month+'.'+info_turn.year+'</th>\n';
-	var info_dataset = l_history.find({'$and': [
-			{year: info_turn.year}, 
-			{month: info_turn.month},
-			{name: state_name}
-		]});
+	var info_text = 'last updated: '+info_turn.month+'.'+info_turn.year+'<br />';
+	var info_dataset = l_market.where(function(doc) {
+			if (doc.year == info_turn.year && 
+					doc.month == info_turn.month &&
+					doc.state == state_name) { 
+				return true;
+			} else {
+				return false;
+			}
+		});
 	_.each(info_dataset, function (commodity) {
-		info_text += '<tr><td>' + commodity.data.commodity + '</td><td>' 
-				+ commodity.data.initial + '</td><td>' 
-				+ commodity.data.remark + '</td></tr>\n';
-	});
-	info_text += '</table>';		
+		info_text += commodity.commodity + '&nbsp;&nbsp;&nbsp;&nbsp;' 
+				+ commodity.initial + '&nbsp;&nbsp;&nbsp;&nbsp;' 
+				+ commodity.remark + '<br />\n';
+	});		
 	//display in a popup
 	var ip = utils.id('info_panel');
 	var ip_head = ip.select('h5')

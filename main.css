@@ -92,7 +92,7 @@ img {
     padding: 10px;
     box-shadow: rgba(0,0,0,0.2) 0 0 2px 1px;
     display: none;
-    z-index: 1000;
+    z-index: 4;
     color: #FFF;
     font-size: 0px;
 }
