@@ -83,10 +83,16 @@ img {
 	cursor: pointer;
 }
 
+#viewport {
+	width: 100%;
+	height: 100%;
+	overflow: scroll;
+}
+
 #info_panel {
-	position: absolute;
-    top: 100px;
-    left: 100px;
+	position: fixed;
+    top: 75px;
+    left: 75px;
     background: rgba(0,0,0,0.9);
     border-radius: 5px;
     padding: 10px;
@@ -95,4 +101,20 @@ img {
     z-index: 4;
     color: #FFF;
     font-size: 0px;
+}
+
+#info_panel h5 {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+#info_panel div.txt {
+    background: #000;
+    font-size: 12px;
+    font-family: Georgia, serif;
+    padding: 2px 5px;
+    width: 145px;
+	margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: rgba(0,0,0,0.5) 0 1px 2px inset;
 }
