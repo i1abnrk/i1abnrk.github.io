@@ -484,7 +484,11 @@ var draw_gui = function(context, options) {
 var show_info = function(state_name) {
 	//calculate data to display
 	var info_turn = get_last_spy(l_player.data.nation, state_name);
-	var info_text = 'last updated: '+info_turn.month+'/'+info_turn.year;
+	var info_table = utils.id('table');
+	//clear the data from last show
+	info_table.html('');
+	var ithead = info_table.append('thead')
+			.text('last updated: '+info_turn.month+'/'+info_turn.year+'\n');
 	var info_dataset = l_market.where(function(doc) {
 			if (doc.year == info_turn.year && 
 					doc.month == info_turn.month &&
@@ -495,9 +499,10 @@ var show_info = function(state_name) {
 			}
 		});
 	_.each(info_dataset, function (commodity) {
-		info_text += commodity.commodity 
-				+ commodity.initial 
-				+ commodity.remark + '\n';
+		var row = info_table.append('tr');
+		row.append('td').text(commodity.commodity);
+		row.append('td').text(commodity.initial);
+		row.append('td').text(commodity.remark);
 	});		
 	//display in a popup
 	var ip = utils.id('info_panel');
@@ -505,13 +510,13 @@ var show_info = function(state_name) {
 		.attr()
 		.style({'color': state_color(state_name)})
 		.text(state_name);
-	var ip_body = ip.select('.txt')
+	var ip_body = ip.select('#table')
 		.attr()
 		.style({'color': state_color(state_name)})
-		.text(info_text);
+		.text();
 	var close_button = ip.select('.close_button').on({
 		click: function() {
-			utils.hide(ip);		
+			utils.hide(ip);	
 		}
 	});
 	utils.show(ip);

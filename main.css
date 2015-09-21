@@ -108,7 +108,7 @@ img {
     font-size: 14px;
 }
 
-#info_panel div.txt {
+#info_panel table {
     background: #000;
     font-size: 12px;
     font-family: Georgia, serif;
