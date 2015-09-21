@@ -17,7 +17,12 @@ const MODE = {
 
 const FIRST_TURN = {month: 1, year: 475}
 const SPY_TIMEOUT = 12;
+const GRABBAG_SIZE = 100;
 var lbl_pfx = 'lbl_';
+//Just get a bunch of rands every now and then since we need so many each turn.
+var grabbag = [];
+//Cause generation on first use
+var bagCounter = GRABBAG_SIZE;
 
 var utils = {
 		offsetX : function(node) {
@@ -102,7 +107,18 @@ var utils = {
 		},
 		supportFileReader : (function() {
 			return (typeof FileReader !== 'undefined');
-		})()
+		})(),
+		getRand: function(offx, dx) {
+			offx=offx?offx:0;
+			dx=dx?dx:0;
+			if (bagCounter >= GRABBAG_SIZE) {
+				bagCounter = 0;
+				for (var n = 0; n <= GRABBAG_SIZE; n++) {
+					grabbag[n] = Math.random();
+				}
+			}
+			return Math.floor(1 + offx + (dx * grabbag[bagCounter++]));
+		}
 	};
 	
 
@@ -206,7 +222,7 @@ var init = function() {
 				month: game_clock.month,
 				state: s.name,
 				commodity: c.name,
-				initial: 0,
+				initial: utils.getRand(200,1800),
 				produced: 0,
 				used: 0,
 				price: c.price,
