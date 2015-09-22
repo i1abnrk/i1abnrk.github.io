@@ -502,21 +502,21 @@ var States_init = [
 ];
 
 var Commodities_init = [
-	{name: 'gold', price: 100.0},
-	{name: 'silver', price: 12.0},
-	{name: 'iron', price: 5.0},
-	{name: 'gems', price: 200.0},
-	{name: 'wheat', price: 1.2},
-	{name: 'horses', price: 8.0},
-	{name: 'cattle', price: 6.0},
-	{name: 'dogs', price: 2.4},
 	{name: 'wood', price: 1.14},
-	{name: 'silage', price: 0.2},
+	{name: 'wheat', price: 1.2},
 	{name: 'textile', price: 1.0},
-	{name: 'leather', price: 4.0},
 	{name: 'spice', price: 10.0},
+	{name: 'silage', price: 0.2},
+	{name: 'silver', price: 12.0},
+	{name: 'leather', price: 4.0},
+	{name: 'iron', price: 5.0},
+	{name: 'horses', price: 8.0},
+	{name: 'gold', price: 100.0},
+	{name: 'gems', price: 200.0},
+	{name: 'dogs', price: 2.4},
+	{name: 'cattle', price: 6.0},
+	{name: 'arms', price: 5.0},
 	{name: 'apples', price: 1.5},
-	{name: 'arms', price: 5.0}
 ];
 
 module.exports.states=function(){return States_init};

@@ -223,7 +223,8 @@ var init = function() {
 				month: game_clock.month,
 				state: s.name,
 				commodity: c.name,
-				initial: utils.getRand(200,1800),
+				initial: utils.getRand(200/(Math.max(1, Math.log(c.price))), 
+					1800/(Math.max(1, Math.log(c.price)))),
 				produced: 0,
 				used: 0,
 				price: c.price,
@@ -481,6 +482,13 @@ var draw_gui = function(context, options) {
 	var viewport = d3.select('#viewport');
 }
 
+var append_row = function(table, data) {
+	var row = table.append('tr');
+	_.each(data, function(datum) {
+		row.append('td').text(datum);
+	});
+}
+
 var show_info = function(state_name) {
 	//calculate data to display
 	var info_turn = get_last_spy(l_player.data.nation, state_name);
@@ -489,21 +497,22 @@ var show_info = function(state_name) {
 	info_table.html('');
 	var ithead = info_table.append('thead')
 			.text('last updated: '+info_turn.month+'/'+info_turn.year+'\n');
+	var state_info = l_states.by('name', state_name);
+	append_row(info_table, ['people', state_info.ppl]);
+	append_row(info_table, ['soldiers', state_info.soldiers]);
+	append_row(info_table, ['fields', state_info.fields]);
 	var info_dataset = l_market.where(function(doc) {
-			if (doc.year == info_turn.year && 
-					doc.month == info_turn.month &&
-					doc.state == state_name) { 
-				return true;
-			} else {
-				return false;
-			}
-		});
+		if (doc.year == info_turn.year && 
+				doc.month == info_turn.month &&
+				doc.state == state_name) { 
+			return true;
+		} else {
+			return false;
+		}
+	});
 	_.each(info_dataset, function (commodity) {
-		var row = info_table.append('tr');
-		row.append('td').text(commodity.commodity);
-		row.append('td').text(commodity.initial);
-		row.append('td').text(commodity.remark);
-	});		
+		append_row(info_table, [commodity.commodity, commodity.price, commodity.initial]);
+	});
 	//display in a popup
 	var ip = utils.id('info_panel');
 	var ip_head = ip.select('h5')
@@ -1075,21 +1084,21 @@ var States_init = [
 ];
 
 var Commodities_init = [
-	{name: 'gold', price: 100.0},
-	{name: 'silver', price: 12.0},
-	{name: 'iron', price: 5.0},
-	{name: 'gems', price: 200.0},
-	{name: 'wheat', price: 1.2},
-	{name: 'horses', price: 8.0},
-	{name: 'cattle', price: 6.0},
-	{name: 'dogs', price: 2.4},
 	{name: 'wood', price: 1.14},
-	{name: 'silage', price: 0.2},
+	{name: 'wheat', price: 1.2},
 	{name: 'textile', price: 1.0},
-	{name: 'leather', price: 4.0},
 	{name: 'spice', price: 10.0},
+	{name: 'silage', price: 0.2},
+	{name: 'silver', price: 12.0},
+	{name: 'leather', price: 4.0},
+	{name: 'iron', price: 5.0},
+	{name: 'horses', price: 8.0},
+	{name: 'gold', price: 100.0},
+	{name: 'gems', price: 200.0},
+	{name: 'dogs', price: 2.4},
+	{name: 'cattle', price: 6.0},
+	{name: 'arms', price: 5.0},
 	{name: 'apples', price: 1.5},
-	{name: 'arms', price: 5.0}
 ];
 
 module.exports.states=function(){return States_init};
