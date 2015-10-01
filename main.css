@@ -44,14 +44,17 @@ img {
 		z-index: 1;
 	}
 }
+
 #nav, #nav ul {
 	display: inline;
 	vertical-align: middle;
 }
+
 #nav li {
 	margin-right: 5px;
 	display: inline;
 }
+
 #nav a:link, #nav a:visited {
 	border: 1px solid #FFF;
 	border-radius: 3px;
@@ -60,16 +63,19 @@ img {
 	display: inline-block;
 	color: #FFF;
 }
+
 #nav a:hover, #nav a:active {
 	border: 1px solid #32c832;
 	color: #32c832;
 }
+
 #nav a:active, #nav .selected a {
 	background: #FFF;
 	color: #000;
 	box-shadow: 0 0 1px #222 inset;
 	border: 1px solid #FFF;
 }
+
 .close_button {
 	width: 10px;
 	height: 10px;
@@ -117,4 +123,45 @@ img {
 	margin-bottom: 10px;
     border-radius: 5px;
     box-shadow: rgba(0,0,0,0.5) 0 1px 2px inset;
+}
+#attack_panel {
+	position: fixed;
+    top: 75px;
+    left: 75px;
+    background: rgba(0,0,0,0.9);
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: rgba(0,0,0,0.2) 0 0 2px 1px;
+    display: none;
+    z-index: 4;
+    color: #FFF;
+    font-size: 0px;
+}
+
+#attack_panel h5 {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+#attack_panel table {
+    background: #000;
+    font-size: 12px;
+    font-family: Georgia, serif;
+    padding: 2px 5px;
+    width: 145px;
+	margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: rgba(0,0,0,0.5) 0 1px 2px inset;
+}
+
+td input {
+    border: 2px solid #999;
+    border-radius: 3px;
+    background: #FFF;
+    padding: 2px 25px 2px 5px;
+    width: 100%;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.2) inset;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }

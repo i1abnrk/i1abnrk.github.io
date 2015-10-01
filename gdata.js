@@ -2,7 +2,7 @@ var Nations_init = [
 	{	name: 'Slavs',
 		color: 'rgb(255,0,0)',
 		demonym: 'Slavs',
-		states:	['Moscva', 'Minsk', 'Kiev']
+		states:	['Minsk', 'Kiev']
 	},
 	{	name: 'Ostrogoths',
 		color: 'rgb(0,127,127)',
@@ -63,7 +63,7 @@ var Nations_init = [
 		color: 'rgb(127,0,63)',
 		demonym: 'Burgundians',
 		states: ['Geneva', 'Leon', 'Marseille']
-	},
+	}, 
 	{	name: 'Picti',
 		color: 'rgb(0,208,48)',
 		demonym: 'Picts',
@@ -87,7 +87,7 @@ var Nations_init = [
 	{	name: 'Hun',
 		color: 'rbg(64,64,64)',
 		demonym: 'Huns',
-		states: []
+		states: ['Moscva']
 	}
 ];
 

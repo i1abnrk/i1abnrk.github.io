@@ -1,19 +1,21 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+
+},{}],2:[function(require,module,exports){
 /*mainline definitions*/
 const DEFAULT_MAP_LABEL_FONT = "12pt Georgia";
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 const MODE = {
-	EXIT: 0,
-	INFO: 1,
-	ATTACK: 2,
-	BUY: 3,
-	SELL: 4,
-	GIVE: 5,
-	SEND: 6,
-	SPY: 7,
-	SAVE: 16,
-	LOAD: 17
+    EXIT: 0,
+    INFO: 1,
+    ATTACK: 2,
+    BUY: 3,
+    SELL: 4,
+    GIVE: 5,
+    SEND: 6,
+    SPY: 7,
+    SAVE: 16,
+    LOAD: 17
 }
 
 const FIRST_TURN = {month: 1, year: 475}
@@ -26,102 +28,104 @@ var grabbag = [];
 var bagCounter = GRABBAG_SIZE;
 
 var utils = {
-		offsetX : function(node) {
-			var box = node.getBoundingClientRect(),
-				scroll = window.pageXOffset;
-				
-			return Math.round(box.left + scroll);
-		},
-		offsetY : function(node) { 
-			var box = node.getBoundingClientRect(),
-				scroll = window.pageYOffset;
-				
-			return Math.round(box.top + scroll);
-		},
-		rightX : function(x) {
-			return x-app.getOffset('x');
-		},
-		rightY : function(y) {
-			return y-app.getOffset('y');
-		},
-		trim : function(str) {
-			return str.replace(/^\s+|\s+$/g, '');
-		},
-		id : function (str) {
-			return d3.select('#' + str);
-		},
-		hide : function(node) {
-			node.style('display', 'none');
-			
-			return this;
-		},
-		show : function(node) {
-			node.style('display', 'block');
-			
-			return this;
-		},
-		encode : function(str) {
-			return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-		},
-		stopEvent : function(e) {
-			e.stopPropagation();
-			e.preventDefault();
-			
-			return this;
-		},
-		addClass : function(node, str) {
-			// node.className.baseVal for SVG-elements
-			// or
-			// node.className for HTML-elements
-			node.classed('str', true);
-			
-			return this;
-		},
-		removeClass : function(node, str) {
-			node.classed('str', false);
-			
-			return this;
-		},
-		hasClass : function(node, str) {
-			var is_svg = node.className.baseVal !== undefined ? true : false,
-				arr = is_svg ? node.className.baseVal.split(' ') : node.className.split(' '),
-				isset = false;
-				
-			_.each(arr, function(x) {
-				if(x === str) {
-					isset = true;
-				}
-			});
-			
-			return isset;
-		},
-		extend : function(obj, options) {
-			var target = {};
-			
-			for (name in obj) {
-				if(obj.hasOwnProperty(name)) {
-					target[name] = options[name] ? options[name] : obj[name];
-				}
-			}
-			
-			return target;
-		},
-		supportFileReader : (function() {
-			return (typeof FileReader !== 'undefined');
-		})(),
-		getRand: function(offx, dx) {
-			offx=offx?offx:0;
-			dx=dx?dx:0;
-			if (bagCounter >= GRABBAG_SIZE) {
-				bagCounter = 0;
-				for (var n = 0; n <= GRABBAG_SIZE; n++) {
-					grabbag[n] = Math.random();
-				}
-			}
-			return Math.floor(1 + offx + (dx * grabbag[bagCounter++]));
-		}
-	};
-	
+        offsetX : function(node) {
+            var box = node.getBoundingClientRect(),
+                scroll = window.pageXOffset;
+
+            return Math.round(box.left + scroll);
+        },
+        offsetY : function(node) {
+            var box = node.getBoundingClientRect(),
+                scroll = window.pageYOffset;
+
+            return Math.round(box.top + scroll);
+        },
+        rightX : function(x) {
+            return x-app.getOffset('x');
+        },
+        rightY : function(y) {
+            return y-app.getOffset('y');
+        },
+        trim : function(str) {
+            return str.replace(/^\s+|\s+$/g, '');
+        },
+        id : function (str) {
+            return d3.select('#' + str);
+        },
+        hide : function(node) {
+            node.style('display', 'none');
+
+            return this;
+        },
+        show : function(node) {
+            node.style('display', 'block');
+
+            return this;
+        },
+        encode : function(str) {
+            return str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        },
+        stopEvent : function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            return this;
+        },
+        addClass : function(nodes, str) {
+            // node.className.baseVal for SVG-elements
+            // or
+            // node.className for HTML-elements
+            _.each(nodes, function(node) {
+                node.className=(node.className==null)?str:_.trim(node.className + ' ' + str);
+            });
+            return this;
+        },
+        removeClass : function(nodes, str) {
+            _.each(nodes, function(node) {
+                node.className=(node.className==null)?'':_.trim(node.className, str);
+            });
+            return this;
+        },
+        hasClass : function(node, str) {
+            var is_svg = node.className.baseVal !== undefined ? true : false,
+                arr = is_svg ? node.className.baseVal.split(' ') : node.className.split(' '),
+                isset = false;
+
+            _.each(arr, function(x) {
+                if(x === str) {
+                    isset = true;
+                }
+            });
+
+            return isset;
+        },
+        extend : function(obj, options) {
+            var target = {};
+
+            for (name in obj) {
+                if(obj.hasOwnProperty(name)) {
+                    target[name] = options[name] ? options[name] : obj[name];
+                }
+            }
+
+            return target;
+        },
+        supportFileReader : (function() {
+            return (typeof FileReader !== 'undefined');
+        })(),
+        getRand: function(offx, dx) {
+            offx=offx?offx:0;
+            dx=dx?dx:0;
+            if (bagCounter >= GRABBAG_SIZE) {
+                bagCounter = 0;
+                for (var n = 0; n <= GRABBAG_SIZE; n++) {
+                    grabbag[n] = Math.random();
+                }
+            }
+            return Math.floor(1 + offx + (dx * grabbag[bagCounter++]));
+        }
+    };
+
 
 var initialized = false;
 
@@ -133,62 +137,51 @@ var selected_state = '';
 
 /*A Turn is the frame of the market for procedural generation.
  *Note: this.commodity.price is the static _base_ price, while this.price is the
- *		dynamic current price.*/
+ *      dynamic current price.*/
 var Turn =  function(values) {
-	this.year = values.year;
-	this.month = values.month;
+    this.year = values.year;
+    this.month = values.month;
 
-	//foreign key --> State.name
-	this.state = values.state;
-	//foreign key --> Commodity.name
-	this.commodity = values.commodity;
-	this.initial = values.initial;
-	this.produced = values.produced;
-	this.used = values.used;
-	this.price = values.price;
-	/*Nearby disasters, etc*/
-	this.remark = values.remark;
+    //foreign key --> State.name
+    this.state = values.state;
+    //foreign key --> Commodity.name
+    this.commodity = values.commodity;
+    this.initial = values.initial;
+    this.produced = values.produced;
+    this.used = values.used;
+    this.price = values.price;
+    /*Nearby disasters, etc*/
+    this.remark = values.remark;
 }
 
 var Commodity = function(values) {
-	/*what it's called*/
-	this.name=values.name;
-	/*equilibrium price*/
-	this.price=values.price;	
+    /*what it's called*/
+    this.name=values.name;
+    /*equilibrium price*/
+    this.price=values.price;
 }
 
 var State = function(values) {
-	this.name = values.name;
-	this.shape = values.shape;
-	this.ppl = values.ppl;
-	this.soldiers = values.soldiers;
-	this.fields = values.fields;
-	this.disasters = values.disasters;
-	this.neighbors = values.neighbors;
+    this.name = values.name;
+    this.shape = values.shape;
+    this.ppl = values.ppl;
+    this.soldiers = values.soldiers;
+    this.fields = values.fields;
+    this.disasters = values.disasters;
+    this.neighbors = values.neighbors;
 }
 
 var Nation = function(values) {
-	this.name = values.name;
-	this.states = values.states;
-	this.color = values.color;
-	this.demonym = values.demonym;
+    this.name = values.name;
+    this.states = values.states;
+    this.color = values.color;
+    this.demonym = values.demonym;
 }
 
 /*Emperor represents the player*/
 var Emperor = function(values) {
-	//state, time pairs
-	var last_spy={};
-	this.name = values.name;
-	this.nation = values.nation;
-	
-	for (n in db.getCollection('nations').data) {
-		nname = n.name;
-		last_spy.nname = FIRST_TURN;
-	}
-
-	var send_spy = function(state) {
-
-	}
+    this.name = values.name;
+    this.nation = values.nation;
 }
 
 var gdata = require('./gdata.js');
@@ -203,105 +196,136 @@ var l_nations = db.addCollection('nations');
 var l_commodities = db.addCollection('commodities');
 var l_player = db.addCollection('player');
 var l_market = db.addCollection('market', {indices: ['year', 'month', 'state', 'commodity']});
+//state, time pairs
+var last_spy={};
 
 var init = function() {
-	var i_states = new gdata.states();
-	var i_nations = new gdata.nations();
-	var i_commodities = new gdata.commodities();
-	l_states.ensureUniqueIndex('name');
-	l_nations.ensureUniqueIndex('name');
-	l_commodities.ensureUniqueIndex('name');
-	_.each(i_states, function (s) {l_states.insert(new State(s))});
-	_.each(i_nations, function (n) {l_nations.insert(new Nation(n))});
-	_.each(i_commodities, function (c) {l_commodities.insert(new Commodity(c))});
-	l_player.insert(new Emperor({name:'Atilla', nation:'Hun'}));
-	//market initial state
-	_.each(i_states, function(s) {
-		_.each(i_commodities, function(c) {
-			l_market.insert(new Turn({
-				year: game_clock.year, 
-				month: game_clock.month,
-				state: s.name,
-				commodity: c.name,
-				initial: utils.getRand(200/(Math.max(1, Math.log(c.price))), 
-					1800/(Math.max(1, Math.log(c.price)))),
-				produced: 0,
-				used: 0,
-				price: c.price,
-				remark: 'first turn'
-			}));
-		});	
-	});
+    var i_states = new gdata.states();
+    var i_nations = new gdata.nations();
+    var i_commodities = new gdata.commodities();
+    l_states.ensureUniqueIndex('name');
+    l_nations.ensureUniqueIndex('name');
+    l_commodities.ensureUniqueIndex('name');
+    _.each(i_states, function (s) {l_states.insert(new State(s))});
+    _.each(i_nations, function (n) {l_nations.insert(new Nation(n))});
+    _.each(i_commodities, function (c) {l_commodities.insert(new Commodity(c))});
+    l_player.insert(new Emperor({name:'Atilla', nation:'Hun'}));
+    //market initial state
+    _.each(i_states, function(s) {
+        last_spy[s.name] = FIRST_TURN;
+        _.each(i_commodities, function(c) {
+            l_market.insert(new Turn({
+                year: game_clock.year,
+                month: game_clock.month,
+                state: s.name,
+                commodity: c.name,
+                initial: utils.getRand(200/(Math.max(1, Math.log(c.price))),
+                    1800/(Math.max(1, Math.log(c.price)))),
+                produced: 0,
+                used: 0,
+                price: c.price,
+                remark: 'first turn'
+            }));
+        });
+    });
 }
 
 //utils
 var attr = function(elt, map) {
-	for (entry in map) {
-		elt.setAttribute(map[entry][0], map[entry][1]);
-	}
+    for (entry in map) {
+        elt.setAttribute(map[entry][0], map[entry][1]);
+    }
 }
 
 /*collate a flat array of numbers into the specification of the 'd' attribute*/
 var d_attr = function(polygon) {
-	var path = '';
-	for (var component=0; component < polygon.length; component++) {
-		//alternate assignment of x, y until no more coords
-		var weight = polygon[component];
-		var vertex = '';
-		//first vertex is 'move_to' event the rest are 'line_to' events
-		if (component % 2 == 0) {
-			vertex += (component==0)?'M ':'L ';
-		}
-		//spaces separate x,y pairs
-		vertex += weight + ' ';
-		path += vertex;
-	}
-	//connect last vertex to first vertex
-	path += 'z';
-	return path;
+    var path = '';
+    for (var component=0; component < polygon.length; component++) {
+        //alternate assignment of x, y until no more coords
+        var weight = polygon[component];
+        var vertex = '';
+        //first vertex is 'move_to' event the rest are 'line_to' events
+        if (component % 2 == 0) {
+            vertex += (component==0)?'M ':'L ';
+        }
+        //spaces separate x,y pairs
+        vertex += weight + ' ';
+        path += vertex;
+    }
+    //connect last vertex to first vertex
+    path += 'z';
+    return path;
 }
 
-/**run function @fun over loki collection by name @coll, 
-	where coll is filtered by comparison function @cmp*/
+/**run function @fun over loki collection by name @coll,
+    where coll is filtered by comparison function @cmp*/
 var lod_for = function(coll, fun, cmp) {
-	var target = db.getCollection(coll).data;
-	var sample = cmp?_.filter(target, cmp):target;
-	_.each(sample, fun(elt));
+    var target = db.getCollection(coll).data;
+    var sample = cmp?_.filter(target, cmp):target;
+    _.each(sample, fun(elt));
 }
 
-var nation_of_state = function(nations, state) {
-	for (n in nations) {
-		var sl = nations[n].states;
-		for(s in sl) {
-			var state_in = sl[s]
-			if(state == state_in) {
-				return nations[n];
-			}		
-		}
-	}
+var nation_of_state = function(state_name) {
+    var nation = null;
+    for (var nation_i in l_nations.data) {
+        var state_list = l_nations.data[nation_i].states;
+        for(var state_i in state_list) {
+            if (state_list[state_i] == state_name) {
+                return nation = l_nations.data[nation_i];
+            }
+        }
+    }
 
-	return null;
+    return nation;
 }
 
 var state_color = function(state) {
-	/*select color from nations where nations.states contains state.name*/
-	var nation = nation_of_state(l_nations.data, state);
-	var color = nation.color;
-	return color;
+    /*select color from nations where nations.states contains state.name*/
+    var nation = nation_of_state(state);
+    var color = nation.color;
+    return color;
 }
 
-
-var get_last_spy = function(nation, state) {
-	//if this is our kingdom, we have spy now
-	if(nation == nation_of_state(state)) {
-		return game_clock;
-	}
-	//elseif no entry, return first turn
-	//else return last_spy.Nation
-	else {
-		return last_spy.nation;
-	}
+var demonym = function(state) {
+    return nation_of_state(state).demonym;
 }
+
+var my_nation = function() {
+    return l_player.data[0].nation;
+}
+
+var my_states = function() {
+    return l_nations.find({name: my_nation()})[0].states;
+}
+
+var is_my_state = function(state_name) {
+    return _.includes(my_states(), state_name);
+}
+
+var my_targets = function(state) {
+    return l_states.find({name: state})[0].neighbors;
+}
+
+var all_my_neighbors = function() {
+    var n_name = my_nation();
+    var my_neighbors = [];
+    //collect a list of all neighbor states
+    _.each(my_states(), function(state) {
+		my_neighbors = _.union(my_neighbors, my_targets(state));
+	});
+    return my_neighbors;
+}
+
+var my_neighbors_of = function(state_name) {
+   var my_neighbors = my_states();
+    _.each(my_neighbors, function(n) {
+        if(!_.includes(my_targets(n), state_name)) {
+            my_neighbors = _.without(my_neighbors, n);
+        }
+    });
+    return my_neighbors;
+}
+
 /*submodule definitions*/
 //console.log(i_data[0]);
 
@@ -309,35 +333,35 @@ var get_last_spy = function(nation, state) {
 /*KBD*/
 /*WASD to scroll map panel, QE to zoom out/in*/
 var KEYS = {
-	W: 87,
-	A: 65,
-	S: 83,
-	D: 68,
-	Q: 81,
-	E: 69
+    W: 87,
+    A: 65,
+    S: 83,
+    D: 68,
+    Q: 81,
+    E: 69
 };
 
 onDocumentKeydown = function(e) {
-	switch(e.keyCode) {
-		case KEYS.W:
-			//scrollMap('top');
-			break;
-		case KEYS.A:
-			//scrollMap('left');
-			break;
-		case KEYS.S:
-			//scrollMap('down');
-			break;
-		case KEYS.D:
-			//scrollMap('right');
-			break;
-		case KEYS.Q:
-			//zoomMap('in');
-			break;
-		case KEYS.E:
-			//zoomMap('out');
-			break;
-	}
+    switch(e.keyCode) {
+        case KEYS.W:
+            //scrollMap('top');
+            break;
+        case KEYS.A:
+            //scrollMap('left');
+            break;
+        case KEYS.S:
+            //scrollMap('down');
+            break;
+        case KEYS.D:
+            //scrollMap('right');
+            break;
+        case KEYS.Q:
+            //zoomMap('in');
+            break;
+        case KEYS.E:
+            //zoomMap('out');
+            break;
+    }
 }
 
 /*GUI*/
@@ -346,231 +370,393 @@ var map_label_font = DEFAULT_MAP_LABEL_FONT;
 
 /*draw_polygon @state must have properties {name: string, shape: number array}*/
 var draw_polygon = function(context, state, style) {
-	context.append('path')
-		.attr({'d': d_attr(state.shape), 'class': 'state', 'id': state.name})
-		.style({'fill': state_color(state.name),
-			'fill-opacity': style.alpha, 
-			'stroke': style.stroke, 
-			'stroke-width': style.lineWidth});	
+    context.append('path')
+        .attr({'d': d_attr(state.shape), 'class': 'state', 'id': state.name})
+        .style({'fill': state_color(state.name),
+            'fill-opacity': style.alpha,
+            'stroke': style.stroke,
+            'stroke-width': style.lineWidth});
 }
 
 var highlight_polygon = function(state_name) {
-	utils.id(state_name)
-		.style({'stroke-width': '3', 'stroke': 'red', 'fill-opacity': '0.81'});
+    utils.id(state_name)
+        .style({'stroke-width': '3', 'stroke': 'red', 'fill-opacity': '0.81'});
 }
 
 var unhighlight_polygon = function(state_name) {
-	utils.id(state_name)
-		.style({'stroke-width': '1', 'stroke': 'blue', 'fill-opacity': '0.4'});
+    utils.id(state_name)
+        .style({'stroke-width': '1', 'stroke': 'blue', 'fill-opacity': '0.4'});
 }
 
 /*draw title*/
 var draw_title = function(context, output, where) {
-	context.append('text')
-			.attr({'x': where.x, 'y': where.y, 'id': lbl_pfx + output})
-			.style({'font-family':'Georgia', 'font-size': '12pt', 
-					'fill': 'black', 'text-anchor' : 'middle'})
-			.text(output);
+    context.append('text')
+            .attr({'x': where.x, 'y': where.y, 'id': lbl_pfx + output})
+            .style({'font-family':'Georgia', 'font-size': '12pt',
+                    'fill': 'black', 'text-anchor' : 'middle'})
+            .text(output);
 }
 
 var get_center = function(shape) {
-	var sum_x=0, sum_y=0;
-	var vertices = _.chunk(shape, 2);
-	_.each(vertices, 
-		function(vertex) {
-			sum_x += vertex[0];
-			sum_y += vertex[1];
-		});
-	var center = {x: sum_x/vertices.length,
-			y: sum_y/vertices.length};
-	return center;
+    var sum_x=0, sum_y=0;
+    var vertices = _.chunk(shape, 2);
+    _.each(vertices,
+        function(vertex) {
+            sum_x += vertex[0];
+            sum_y += vertex[1];
+        });
+    var center = {x: sum_x/vertices.length,
+            y: sum_y/vertices.length};
+    return center;
 }
 
 var draw_details = function(options) {
-	var states = db.getCollection('states').data;
-	var border_layer = d3.select('div').append('svg')
-		.attr({'width': 2298,'height': 1730})
-		.style({'background-color':'transparent', 'text-align':'center',
-				'position': 'absolute', 'z-index': 2});
-	_.each(states, function (s) {
-		draw_polygon(border_layer, s, {'stroke':'blue', 'stroke-width': '1px', 'alpha': '0.4'});
-	});
-	_.each(states, function (s) {
-		draw_title(border_layer, s.name, get_center(s.shape));
-	});
+    var states = db.getCollection('states').data;
+    var border_layer = d3.select('div').append('svg')
+        .attr({'width': 2298,'height': 1730})
+        .style({'background-color':'transparent', 'text-align':'center',
+                'position': 'absolute', 'z-index': 2});
+    _.each(states, function (s) {
+        draw_polygon(border_layer, s, {'stroke':'blue', 'stroke-width': '1px', 'alpha': '0.4'});
+    });
+    _.each(states, function (s) {
+        draw_title(border_layer, s.name, get_center(s.shape));
+    });
 }
 
 var draw_map = function(options) {
-	//console.log(countries_graph)
-	//draw background
-	var map_bg = document.getElementById('map_layer');
-	map_bg.src='./germanic_roman_486_1923.jpg';
-	map_bg.alt='Germanic tribes and Rome in 486 A.D.';
-	
+    //console.log(countries_graph)
+    //draw background
+    var map_bg = document.getElementById('map_layer');
+    map_bg.src='./germanic_roman_486_1923.jpg';
+    map_bg.alt='Germanic tribes and Rome in 486 A.D.';
+
+}
+
+var do_attack = function(aggressor, sent, defender) {
+	if (sent <= 0) return;
+	var aggressor_count = sent;
+	var defender_count = l_states.soldiers;
+	var win = false;
+	var fail = false;
+	for (var s = 1; s < sent && !win && !fail; s++) {
+		var attack_dice_count = Math.min(2, sent-s);
+		var attack_dice = [];
+		var defense_dice_count = Math.min(3, defender_count);
+		var defense_dice = [];
+		
+		for (var a=1; a <= attack_dice_count; a++) {
+			attack_dice[a] = getRand(1,5);
+		}
+		for (var d=1; d <= defense_dice_count; d++) {
+			defense_dice[d] = getRand(1,5);
+		}
+		//sort descending
+		attack_dice.sort(function(a, b){return b-a});
+		defense_dice.sort(function(a, b){return b-a});
+		
+		switch(defense_dice_count) {
+			case 1:
+				if(attack_dice_count==1) {
+					if(attack_dice[0] <= defense_dice[0]) {
+						aggressor_count -= 1;
+					} else {
+						defender_count -= 1;
+						win = true;
+					}
+				} else {
+					if(attack_dice[0] <= defense_dice[0]) {
+						aggressor_count -= 1;
+					} else {
+						defender_count -= 1;
+						win = true;
+					}
+				}
+				break;
+			case 2:
+			case 3:
+				if(attack_dice_count == 1){
+					if(attack_dice[0] <= defense_dice[0]) {
+						aggressor_count -= 1;
+						fail = true;
+					} else {
+						defender_count -= 1;
+					}
+				} else {
+					if (attack_dice[0] <= defense_dice[0]) {
+						if (attack_dice[1] <= defense_dice[1]) {
+							aggressor_count -= 2;
+						} else {
+							aggressor_count -= 1;
+							defender_count -= 1;
+						}
+					} else {
+						if(attack_dice[1] <= defense_dice[1]) {
+							aggressor_count -= 1;
+							defender_count -= 1;
+						} else {
+							defender_count -= 2;
+						}
+					}
+				}
+				break;
+			default:
+				break;
+		}
+		if (aggressor_count <= 0) return 0;
+		if (defender_count <= 0) return aggressor_count;
+		return -1;
+	}
 }
 
 var map_event_handler = function() {
-	d3.selectAll('path').on({
-		mouseenter: function() {
-			if (selected_state != this.id) {
-				highlight_polygon(this.id);
-			}
-			return;
-		},			
-		mouseleave: function() {
-			if (selected_state != this.id) {
-				unhighlight_polygon(this.id);
-			}
-			return;	
-		},
-		click: function() {
-			switch(game_mode) {
-				case MODE.INFO:
-					//show known info in a pop up
-					if (selected_state == this.id) {
-						selected_state = '';
-					} else {
-						if (selected_state != '') {
-							unhighlight_polygon(selected_state);
-						}
-						selected_state = this.id;
-						show_info(this.id);
-					}
+    d3.selectAll('path').on({
+        mouseenter: function() {
+            if (selected_state != this.id) {
+                highlight_polygon(this.id);
+            }
+            return;
+        },
+        mouseleave: function() {
+            if (selected_state != this.id) {
+                unhighlight_polygon(this.id);
+            }
+            return;
+        },
+        click: function() {
+            switch(game_mode) {
+                case MODE.INFO:
+                    //show known info in a pop up
+                    if (selected_state == this.id) {
+                        selected_state = '';
+                    } else {
+                        if (selected_state != '') {
+                            unhighlight_polygon(selected_state);
+                        }
+                        selected_state = this.id;
+                        show_info(this.id);
+                    }
+                    break;
+				case MODE.ATTACK:
+                    if (selected_state != '') {
+                        unhighlight_polygon(selected_state)
+                    }
+					selected_state = this.id;
+                    show_attack(selected_state);
 					break;
-			}
-			return;
-		}
-	});
+            }
+            return;
+        }
+    });
 
-	d3.selectAll('text').on({
-			mouseenter: function() {
-			//parent, or id of the path element this label is upon displayed
-				if (selected_state != this.id.substring(lbl_pfx.length, this.id.length)) {
-					highlight_polygon(this.id.substring(lbl_pfx.length, this.id.length));
-				}
-				return;
-			},			
-			mouseleave: function() {
-				if (selected_state != this.id.substring(lbl_pfx.length, this.id.length)) {
-					unhighlight_polygon(this.id.substring(lbl_pfx.length, this.id.length));
-				}
-				return;	
-			},
-			click: function() {
-				switch(game_mode) {
-					case MODE.INFO:
-						//show known info in a pop up
-						if (selected_state == this.id.substring(lbl_pfx.length, this.id.length)) {
-							selected_state = '';
-						} else {
-							if (selected_state != '') {
-								unhighlight_polygon(selected_state);
-							}
-							selected_state = this.id.substring(lbl_pfx.length, this.id.length);
-							show_info(this.id.substring(lbl_pfx.length, this.id.length));
-						}
+    d3.selectAll('text').on({
+            mouseenter: function() {
+            //parent, or id of the path element this label is upon displayed
+                if (selected_state != this.id.substring(lbl_pfx.length, this.id.length)) {
+                    highlight_polygon(this.id.substring(lbl_pfx.length, this.id.length));
+                }
+                return;
+            },
+            mouseleave: function() {
+                if (selected_state != this.id.substring(lbl_pfx.length, this.id.length)) {
+                    unhighlight_polygon(this.id.substring(lbl_pfx.length, this.id.length));
+                }
+                return;
+            },
+            click: function() {
+                switch(game_mode) {
+                    case MODE.INFO:
+                        //show known info in a pop up
+                        if (selected_state == this.id.substring(lbl_pfx.length, this.id.length)) {
+                            selected_state = '';
+                        } else {
+                            if (selected_state != '') {
+                                unhighlight_polygon(selected_state);
+                            }
+                            selected_state = this.id.substring(lbl_pfx.length, this.id.length);
+                            show_info(this.id.substring(lbl_pfx.length, this.id.length));
+                        }
+                        break;
+					case MODE.ATTACK:
+                        if (selected_state != '') {
+                            unhighlight_polygon(selected_state)
+                        }
+						selected_state = this.id.substring(lbl_pfx.length, this.id.length);
+						show_attack(this.id.substring(lbl_pfx.length, this.id.length));
 						break;
-				}
-				return;
+                }
+                return;
+            }
+        });
+		
+		utils.id('info').on({
+			click: function() {
+                switch (game_mode) {
+                    case MODE.ATTACK:
+                        if(selected_state!='') {
+                            utils.hide(utils.id('attack_panel'));
+                        }
+                        break;
+                }
+				game_mode = MODE.INFO;
+                if(selected_state != '') {
+                    show_info(selected_state);
+                }
+			}
+		})
+		
+		utils.id('attack').on({
+			click: function() {
+                switch (game_mode) {
+                    case MODE.INFO:
+                        if(selected_state!='') {
+                            utils.hide(utils.id('info_panel'));
+                        }
+                }
+				game_mode = MODE.ATTACK;
+                if (selected_state != '') {
+                    show_attack(selected_state);
+                }
 			}
 		});
+        
+        
+		d3.selectAll('#nav a').on({
+			click: function() {
+				//clear selected class from any other nav button
+				utils.removeClass(d3.selectAll('#nav a'), 'selected');
+				utils.addClass(this, 'selected');
+			}
+		});
+        
+        utils.id('a_cancel').on({
+            click: function() {
+                utils.hide(utils.id('attack_panel'));
+            }
+        });
 }
 
 var draw_gui = function(context, options) {
-	/*adjust viewport size to fit screen resolution.*/
-	/*draw a navbar with semi-transparency.*/
-	var viewport = d3.select('#viewport');
+    /*adjust viewport size to fit screen resolution.*/
+    /*draw a navbar with semi-transparency.*/
+    var viewport = d3.select('#viewport');
 }
 
 var append_row = function(table, data) {
-	var row = table.append('tr');
-	_.each(data, function(datum) {
-		row.append('td').text(datum);
-	});
+    var row = table.append('tr');
+    _.each(data, function(datum) {
+        row.append('td').html(datum);
+    });
 }
 
 var show_info = function(state_name) {
-	//calculate data to display
-	var info_turn = get_last_spy(l_player.data.nation, state_name);
-	var info_table = utils.id('table');
-	//clear the data from last show
-	info_table.html('');
-	var ithead = info_table.append('thead')
-			.text('last updated: '+info_turn.month+'/'+info_turn.year+'\n');
-	var state_info = l_states.by('name', state_name);
-	append_row(info_table, ['people', state_info.ppl]);
-	append_row(info_table, ['soldiers', state_info.soldiers]);
-	append_row(info_table, ['fields', state_info.fields]);
-	var info_dataset = l_market.where(function(doc) {
-		if (doc.year == info_turn.year && 
-				doc.month == info_turn.month &&
-				doc.state == state_name) { 
-			return true;
-		} else {
-			return false;
-		}
-	});
-	_.each(info_dataset, function (commodity) {
-		append_row(info_table, [commodity.commodity, commodity.price, commodity.initial]);
-	});
-	//display in a popup
-	var ip = utils.id('info_panel');
-	var ip_head = ip.select('h5')
-		.attr()
+    //calculate data to display
+    var info_turn = last_spy[state_name];
+    var info_table = utils.id('table');
+    //clear the data from last show
+    info_table.html('');
+    var ithead = info_table.append('thead')
+            .text('last updated: '+info_turn.month+'/'+info_turn.year+'\n');
+    var state_info = l_states.by('name', state_name);
+    append_row(info_table, ['people', state_info.ppl]);
+    append_row(info_table, ['soldiers', state_info.soldiers]);
+    append_row(info_table, ['fields', state_info.fields]);
+    var info_dataset = l_market.where(function(doc) {
+        if (doc.year == info_turn.year &&
+                doc.month == info_turn.month &&
+                doc.state == state_name) {
+            return true;
+        } else {
+            return false;
+        }
+    });
+    _.each(info_dataset, function (commodity) {
+        append_row(info_table, [commodity.commodity, commodity.price, commodity.initial]);
+    });
+    //display in a popup
+    var ip = utils.id('info_panel');
+    var ip_head = ip.select('h5')
+        .attr()
+        .style({'color': state_color(state_name)})
+        .text('INFO: ' + demonym(state_name) + ' of ' + state_name);
+    var ip_body = ip.select('#table')
+        .attr()
+        .style({'color': state_color(state_name)})
+        .text();
+    var close_button = ip.select('.close_button').on({
+        click: function() {
+            utils.hide(ip);
+        }
+    });
+    utils.show(ip);
+}
+
+var show_attack = function(state_name) {
+	var ap = utils.id('attack_panel');
+	var ap_head = ap.select('h5')
 		.style({'color': state_color(state_name)})
-		.text(state_name);
-	var ip_body = ip.select('#table')
-		.attr()
-		.style({'color': state_color(state_name)})
-		.text();
-	var close_button = ip.select('.close_button').on({
+		.text('ATTACK: ' + demonym(state_name) + ' of ' + state_name);
+	var close_button = ap.select('.close_button').on({
 		click: function() {
-			utils.hide(ip);	
+			utils.hide(ap);
 		}
 	});
-	utils.show(ip);
+    var ap_body = ap.select('#a_table');
+    ap_body.html('');
+    var athead = ap_body.append('thead').attr('colspan', 3).text('Can send soldiers from: ');
+    var my_neighbors = my_neighbors_of(state_name);
+    if (my_neighbors.length == 0) {
+        append_row(ap_body, ['No neighbors of ' + state_name]);
+    } else {
+        _.each(my_neighbors, function(neighbor) {
+            var n = l_states.by('name', neighbor);
+            var textfield = '<input type=\"text\" id=\"ati_'+ neighbor +'\" />'
+            append_row(ap_body, [n.name, n.soldiers, textfield]);
+        });
+    }
+    utils.show(ap);
 }
 
 /*mainline execution*/
 /*draw map data*/
 var render_loop = function() {
-	draw_map();
-	//draw_details(border_layer, i_states, null);
-	draw_details();
-	draw_gui();
+    draw_map();
+    //draw_details(border_layer, i_states, null);
+    draw_details();
+    draw_gui();
 }
 
 /*perform logic calculations for next redraw*/
 var logic_loop = function() {
-	//console.log(l_states.find('Eire'));
-	
+    //console.log(l_states.find('Eire'));
+
 }
 
 /*wait for user input, process events in realtime*/
 var input_loop = function() {
-	/*enable direct input queue*/
-	map_event_handler();
-	/*enable indirect input queue while processing or exit*/
-	
+    /*enable direct input queue*/
+    map_event_handler();
+    /*enable indirect input queue while processing or exit*/
+
 }
 
 var mainline = function(options) {
-	//while(prog_state == RUN_STATE.CONTINUE)
-	try { 
-		init();
-	} catch (ex) {
-		console.error(ex);
-		document.write('Program cannot initialize. \n <a href="https://github.com/i1abnrk/i1abnrk.github.io/issues/">You may report the error.</a>');
-	}
-		initialized = true;
-		//display client view
-		render_loop();
-		//register event-listener controllers
-		input_loop();
-		//after end_turn: update data model
-		logic_loop();
-	//}
-	//window.exit(prog_state);
+    //while(prog_state == RUN_STATE.CONTINUE)
+    try {
+        init();
+    } catch (ex) {
+        console.error(ex);
+        document.write('Program cannot initialize. \n <a href="https://github.com/i1abnrk/i1abnrk.github.io/issues/">You may report the error.</a>');
+    }
+        initialized = true;
+        //display client view
+        render_loop();
+        //register event-listener controllers
+        input_loop();
+        //after end_turn: update data model
+        logic_loop();
+    //}
+    //window.exit(prog_state);
 }
 
 var app = function(options) { mainline(options); }
@@ -579,12 +765,12 @@ app();
 
 module.exports.app=function(options) {return this.app(options);}
 
-},{"./gdata.js":2,"./microeconomics.js":3,"d3":4,"lodash":5,"lokijs":7}],2:[function(require,module,exports){
+},{"./gdata.js":3,"./microeconomics.js":4,"d3":5,"lodash":6,"lokijs":8}],3:[function(require,module,exports){
 var Nations_init = [
 	{	name: 'Slavs',
 		color: 'rgb(255,0,0)',
 		demonym: 'Slavs',
-		states:	['Moscva', 'Minsk', 'Kiev']
+		states:	['Minsk', 'Kiev']
 	},
 	{	name: 'Ostrogoths',
 		color: 'rgb(0,127,127)',
@@ -645,7 +831,7 @@ var Nations_init = [
 		color: 'rgb(127,0,63)',
 		demonym: 'Burgundians',
 		states: ['Geneva', 'Leon', 'Marseille']
-	},
+	}, 
 	{	name: 'Picti',
 		color: 'rgb(0,208,48)',
 		demonym: 'Picts',
@@ -669,7 +855,7 @@ var Nations_init = [
 	{	name: 'Hun',
 		color: 'rbg(64,64,64)',
 		demonym: 'Huns',
-		states: []
+		states: ['Moscva']
 	}
 ];
 
@@ -1105,7 +1291,7 @@ module.exports.states=function(){return States_init};
 module.exports.nations=function(){return Nations_init};
 module.exports.commodities=function(){return Commodities_init};
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /*<!--microeconomics.js (c)2015, Seven Autumns Media
 Economic simulation functions for games. From SCRATCH based on ideas and testing.
 For inspiration: see _Dope Wars_ circa 1998, or _Romance of the Three Kingdoms_ 
@@ -1260,7 +1446,7 @@ var get_first_turn = function() {
 	return 475;
 }
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 !function() {
   var d3 = {
     version: "3.5.6"
@@ -10765,7 +10951,7 @@ var get_first_turn = function() {
   if (typeof define === "function" && define.amd) define(d3); else if (typeof module === "object" && module.exports) module.exports = d3;
   this.d3 = d3;
 }();
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -23120,7 +23306,7 @@ var get_first_turn = function() {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*
   Loki IndexedDb Adapter (need to include this script to use it)
   
@@ -23210,7 +23396,7 @@ var get_first_turn = function() {
     IndexedAdapter.prototype.checkAvailability = function()
     {
       if (window && window.indexedDB) return true;
-      
+
       return false;
     };
 
@@ -23226,7 +23412,7 @@ var get_first_turn = function() {
       var adapter = this;
       
       // lazy open/create db reference so dont -need- callback in constructor
-      if (this.catalog === null) {
+      if (this.catalog === null || this.catalog.db === null) {
         this.catalog = new LokiCatalog(function(cat) {
           adapter.catalog = cat;
         
@@ -23269,7 +23455,7 @@ var get_first_turn = function() {
       var adapter = this;
       
       // lazy open/create db reference so dont -need- callback in constructor
-      if (this.catalog === null) {
+      if (this.catalog === null || this.catalog.db === null) {
         this.catalog = new LokiCatalog(function(cat) {
           adapter.catalog = cat;
           
@@ -23298,7 +23484,7 @@ var get_first_turn = function() {
       var adapter = this;
       
       // lazy open/create db reference so dont -need- callback in constructor
-      if (this.catalog === null) {
+      if (this.catalog === null || this.catalog.db === null) {
         this.catalog = new LokiCatalog(function(cat) {
           adapter.catalog = cat;
           
@@ -23332,7 +23518,7 @@ var get_first_turn = function() {
       var adapter = this;
       
       // lazy open/create db reference so dont -need- callback in constructor
-      if (this.catalog === null) {
+      if (this.catalog === null || this.catalog.db === null) {
         this.catalog = new LokiCatalog(function(cat) {
           adapter.catalog = cat;
           
@@ -23376,7 +23562,7 @@ var get_first_turn = function() {
       var adapter = this;
       
       // lazy open/create db reference
-      if (this.catalog === null) {
+      if (this.catalog === null || this.catalog.db === null) {
         this.catalog = new LokiCatalog(function(cat) {
           adapter.catalog = cat;
           
@@ -23418,7 +23604,7 @@ var get_first_turn = function() {
         }
       });
     };
-    
+
     /**
      * LokiCatalog - underlying App/Key/Value catalog persistence
      *    This non-interface class implements the actual persistence.
@@ -23427,12 +23613,10 @@ var get_first_turn = function() {
     function LokiCatalog(callback) 
     {
       this.db = null;
-
       this.initializeLokiCatalog(callback);
     }
 
-    LokiCatalog.prototype.initializeLokiCatalog = function(callback)
-    {
+    LokiCatalog.prototype.initializeLokiCatalog = function(callback) {
       var openRequest = indexedDB.open('LokiCatalog', 1);
       var cat = this;
       
@@ -23695,10 +23879,11 @@ var get_first_turn = function() {
     };
 
     return IndexedAdapter;
+
   }());
 }));
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function (global){
 /**
  * LokiJS
@@ -23730,7 +23915,7 @@ var get_first_turn = function() {
         }
       },
       // used to recursively scan hierarchical transform step object for param substitution
-      resolveTransformObject : function (subObj, params, depth) {
+      resolveTransformObject: function (subObj, params, depth) {
         var prop,
           pname;
 
@@ -23745,18 +23930,17 @@ var get_first_turn = function() {
             pname = subObj[prop].substring(8);
             if (params.hasOwnProperty(pname)) {
               subObj[prop] = params[pname];
-            }            
-          }
-          else if (typeof subObj[prop] === "object") {
+            }
+          } else if (typeof subObj[prop] === "object") {
             subObj[prop] = Utils.resolveTransformObject(subObj[prop], params, depth);
           }
         }
-        
+
         return subObj;
       },
       // top level utility to resolve an entire (single) transform (array of steps) for parameter substitution
       resolveTransformParams: function (transform, params) {
-        var idx, 
+        var idx,
           prop,
           clonedStep,
           resolvedTransform = [];
@@ -23764,7 +23948,7 @@ var get_first_turn = function() {
         if (typeof params === 'undefined') return transform;
 
         // iterate all steps in the transform array
-        for (idx=0; idx < transform.length; idx++) {
+        for (idx = 0; idx < transform.length; idx++) {
           // clone transform so our scan and replace can operate directly on cloned transform
           clonedStep = JSON.parse(JSON.stringify(transform[idx]));
           resolvedTransform.push(Utils.resolveTransformObject(clonedStep, params));
@@ -24060,21 +24244,6 @@ var get_first_turn = function() {
       this.autosaveInterval = 5000;
       this.autosaveHandle = null;
 
-      // experimental support for browserify's abstract syntax scan to pick up dependency of indexed adapter.
-      // Hopefully, once this hits npm a browserify require of lokijs should scan the main file and detect this indexed adapter reference.
-      // Only in that environment should you instantiate the indexed adapter via db.getters.indexedAdapter (where db is loki ref).
-      this.getters = {
-        get indexedAdapter() {
-          var adapter;
-
-          if (typeof require === 'function') {
-            adapter = require("./loki-indexed-adapter.js");
-          }
-
-          return adapter;
-        }
-      };
-      
       this.options = {};
 
       // currently keeping persistenceMethod and persistenceAdapter as loki level properties that
@@ -24093,6 +24262,7 @@ var get_first_turn = function() {
 
       this.events = {
         'init': [],
+        'loaded': [],
         'flushChanges': [],
         'close': [],
         'changes': [],
@@ -24142,6 +24312,19 @@ var get_first_turn = function() {
 
     // db class is an EventEmitter
     Loki.prototype = new LokiEventEmitter();
+
+    // experimental support for browserify's abstract syntax scan to pick up dependency of indexed adapter.
+    // Hopefully, once this hits npm a browserify require of lokijs should scan the main file and detect this indexed adapter reference.
+    Loki.prototype.getIndexedAdapter = function () {
+      var adapter;
+
+      if (typeof require === 'function') {
+        adapter = require("./loki-indexed-adapter.js");
+      }
+
+      return adapter;
+    };
+
 
     /**
      * configureOptions - allows reconfiguring database options
@@ -24205,11 +24388,11 @@ var get_first_turn = function() {
         if (this.options.hasOwnProperty('autosave') && this.options.autosave) {
           this.autosaveDisable();
           this.autosave = true;
-          
-          if(this.options.hasOwnProperty('autosaveCallback')){
-              this.autosaveEnable(options, options.autosaveCallback);
-          }else{
-              this.autosaveEnable();
+
+          if (this.options.hasOwnProperty('autosaveCallback')) {
+            this.autosaveEnable(options, options.autosaveCallback);
+          } else {
+            this.autosaveEnable();
           }
         }
       } // end of options processing
@@ -24330,7 +24513,7 @@ var get_first_turn = function() {
      */
     Loki.prototype.loadJSON = function (serializedDb, options) {
 
-      if(serializedDb.length===0) serializedDb=JSON.stringify({});
+      if (serializedDb.length === 0) serializedDb = JSON.stringify({});
       var obj = JSON.parse(serializedDb),
         i = 0,
         len = obj.collections ? obj.collections.length : 0,
@@ -24393,7 +24576,7 @@ var get_first_turn = function() {
         copyColl.uniqueNames = [];
         if (coll.hasOwnProperty("uniqueNames")) {
           copyColl.uniqueNames = coll.uniqueNames;
-          for (j=0; j < copyColl.uniqueNames.length; j++) {
+          for (j = 0; j < copyColl.uniqueNames.length; j++) {
             copyColl.ensureUniqueIndex(copyColl.uniqueNames[j]);
           }
         }
@@ -24405,7 +24588,7 @@ var get_first_turn = function() {
         for (var idx = 0; idx < coll.DynamicViews.length; idx++) {
           var colldv = coll.DynamicViews[idx];
 
-          var dv = copyColl.addDynamicView(colldv.name, colldv.persistent);
+          var dv = copyColl.addDynamicView(colldv.name, colldv.options);
           dv.resultdata = colldv.resultdata;
           dv.resultsdirty = colldv.resultsdirty;
           dv.filterPipeline = colldv.filterPipeline;
@@ -24600,6 +24783,7 @@ var get_first_turn = function() {
           if (typeof (dbString) === 'string') {
             self.loadJSON(dbString, options || {});
             cFun(null);
+            self.emit('loaded', 'database ' + self.filename + ' loaded');
           } else {
             console.warn('lokijs loadDatabase : Database not found');
             if (typeof (dbString) === "object") {
@@ -24818,6 +25002,72 @@ var get_first_turn = function() {
     Resultset.prototype.branch = Resultset.prototype.copy;
 
     /**
+     * transform() - executes a raw array of transform steps against the resultset.
+     *
+     * @param {array} : (Optional) array of transform steps to execute against this resultset.
+     * @param {object} : (Optional) object property hash of parameters, if the transform requires them.
+     * @returns {Resultset} : either (this) resultset or a clone of of this resultset (depending on steps)
+     */
+    Resultset.prototype.transform = function (transform, parameters) {
+      var idx,
+        step,
+        rs = this;
+
+      if (typeof parameters !== 'undefined') {
+        transform = Utils.resolveTransformParams(transform, parameters);
+      }
+
+      for (idx = 0; idx < transform.length; idx++) {
+        step = transform[idx];
+
+        switch (step.type) {
+        case "find":
+          rs.find(step.value);
+          break;
+        case "where":
+          rs.where(step.value);
+          break;
+        case "simplesort":
+          rs.simplesort(step.property, step.desc);
+          break;
+        case "compoundsort":
+          rs.compoundsort(step.value);
+          break;
+        case "sort":
+          rs.sort(step.value);
+          break;
+        case "limit":
+          rs = rs.limit(step.value);
+          break; // limit makes copy so update reference
+        case "offset":
+          rs = rs.offset(step.value);
+          break; // offset makes copy so update reference
+        case "map":
+          rs = rs.map(step.value);
+          break;
+        case "eqJoin":
+          rs = rs.eqJoin(step.joinData, step.leftJoinKey, step.rightJoinKey, step.mapFun);
+          break;
+          // following cases break chain by returning array data so make any of these last in transform steps
+        case "mapReduce":
+          rs = rs.mapReduce(step.mapFunction, step.reduceFunction);
+          break;
+          // following cases update documents in current filtered resultset (use carefully)
+        case "update":
+          rs.update(step.value);
+          break;
+        case "remove":
+          rs.remove();
+          break;
+        default:
+          break;
+        }
+      }
+
+      return rs;
+    };
+
+    /**
      * sort() - User supplied compare function is provided two documents to compare. (chainable)
      *    Example:
      *    rslt.sort(function(obj1, obj2) {
@@ -24998,7 +25248,7 @@ var get_first_turn = function() {
           return [0, -1];
         }
         if (ltHelper(maxVal, val)) {
-          return [0, rcd.length-1];
+          return [0, rcd.length - 1];
         }
         break;
       case '$lte':
@@ -25006,7 +25256,7 @@ var get_first_turn = function() {
           return [0, -1];
         }
         if (ltHelper(maxVal, val, true)) {
-          return [0, rcd.length-1];
+          return [0, rcd.length - 1];
         }
         break;
       }
@@ -25385,9 +25635,17 @@ var get_first_turn = function() {
           i = t.length;
 
           if (firstOnly) {
-            while (i--) {
-              if (fun(t[i][property], value)) {
-                return (t[i]);
+            if (usingDotNotation) {
+              while (i--) {
+                if (this.dotSubScan(t[i], property, fun, value)) {
+                  return (t[i]);
+                }
+              }
+            } else {
+              while (i--) {
+                if (fun(t[i][property], value)) {
+                  return (t[i]);
+                }
               }
             }
 
@@ -25882,10 +26140,31 @@ var get_first_turn = function() {
      *    Unlike this dynamic view, the branched resultset will not be 'live' updated,
      *    so your branched query should be immediately resolved and not held for future evaluation.
      *
+     * @param {string, array} : Optional name of collection transform, or an array of transform steps
+     * @param {object} : optional parameters (if optional transform requires them)
      * @returns {Resultset} A copy of the internal resultset for branched queries.
      */
-    DynamicView.prototype.branchResultset = function () {
-      return this.resultset.copy();
+    DynamicView.prototype.branchResultset = function (transform, parameters) {
+      var rs = this.resultset.copy();
+
+      if (typeof transform === 'undefined') {
+        return rs;
+      }
+
+      // if transform is name, then do lookup first
+      if (typeof transform === 'string') {
+        if (this.collection.transforms.hasOwnProperty(transform)) {
+          transform = this.collection.transforms[transform];
+        }
+      }
+
+      // either they passed in raw transform array or we looked it up, so process
+      if (typeof transform === 'object' && Array.isArray(transform)) {
+        // if parameters were passed, apply them
+        return rs.transform(transform, parameters);
+      }
+
+      return rs;
     };
 
     /**
@@ -26082,7 +26361,7 @@ var get_first_turn = function() {
      * queueRebuildEvent() - When the view is not sorted we may still wish to be notified of rebuild events.
      *     This event will throttle and queue a single rebuild event when batches of updates affect the view.
      */
-    DynamicView.prototype.queueRebuildEvent = function() {
+    DynamicView.prototype.queueRebuildEvent = function () {
       var self = this;
 
       if (this.rebuildPending) {
@@ -26091,12 +26370,12 @@ var get_first_turn = function() {
 
       this.rebuildPending = true;
 
-      setTimeout(function() {
+      setTimeout(function () {
         self.rebuildPending = false;
         self.emit('rebuild', this);
       }, 1);
     };
-    
+
     /**
      * queueSortPhase : If the view is sorted we will throttle sorting to either :
      *    (1) passive - when the user calls data(), or
@@ -26117,8 +26396,7 @@ var get_first_turn = function() {
         setTimeout(function () {
           self.performSortPhase();
         }, 1);
-      }
-      else {
+      } else {
         // must be passive sorting... since not calling performSortPhase (until data call), lets use queueRebuildEvent to 
         // potentially notify user that data has changed.
         this.queueRebuildEvent();
@@ -26200,8 +26478,7 @@ var get_first_turn = function() {
         // need to re-sort to sort new document
         if (this.sortFunction || this.sortCriteria) {
           this.queueSortPhase();
-        }
-        else {
+        } else {
           this.queueRebuildEvent();
         }
 
@@ -26230,8 +26507,7 @@ var get_first_turn = function() {
         // in case changes to data altered a sort column
         if (this.sortFunction || this.sortCriteria) {
           this.queueSortPhase();
-        }
-        else {
+        } else {
           this.queueRebuildEvent();
         }
 
@@ -26248,8 +26524,7 @@ var get_first_turn = function() {
         // in case changes to data altered a sort column
         if (this.sortFunction || this.sortCriteria) {
           this.queueSortPhase();
-        }
-        else {
+        } else {
           this.queueRebuildEvent();
         }
 
@@ -26298,7 +26573,7 @@ var get_first_turn = function() {
       oldlen = ofr.length;
       for (idx = 0; idx < oldlen; idx++) {
         if (ofr[idx] > objIndex) {
-          ofr[idx] --;
+          ofr[idx]--;
         }
       }
     };
@@ -26342,7 +26617,7 @@ var get_first_turn = function() {
       // unique contraints contain duplicate object references, so they are not persisted.
       // we will keep track of properties which have unique contraint applied here, and regenerate on load
       this.uniqueNames = [];
-      
+
       // transforms will be used to store frequently used query chains as a series of steps 
       // which itself can be stored along with the database.
       this.transforms = {};
@@ -26370,7 +26645,7 @@ var get_first_turn = function() {
           options.unique = [options.unique];
         }
         options.unique.forEach(function (prop) {
-          self.uniqueNames.push(prop);  // used to regenerate on subsequent database loads
+          self.uniqueNames.push(prop); // used to regenerate on subsequent database loads
           self.constraints.unique[prop] = new UniqueIndex(prop);
         });
       }
@@ -26549,11 +26824,11 @@ var get_first_turn = function() {
       this.transforms[name] = transform;
     };
 
-    Collection.prototype.removeTransform = function(name) {
+    Collection.prototype.removeTransform = function (name) {
       delete transforms[name];
     };
 
-    Collection.prototype.byExample = function(template) {
+    Collection.prototype.byExample = function (template) {
       var k, obj, query;
       query = [];
       for (k in template) {
@@ -26564,12 +26839,18 @@ var get_first_turn = function() {
           obj
         ));
       }
-      return { '$and': query };
+      return {
+        '$and': query
+      };
     };
 
-    Collection.prototype.findObject = function(template) { return this.findOne(this.byExample(template)); };
+    Collection.prototype.findObject = function (template) {
+      return this.findOne(this.byExample(template));
+    };
 
-    Collection.prototype.findObjects = function(template) { return this.find(this.byExample(template)); };
+    Collection.prototype.findObjects = function (template) {
+      return this.find(this.byExample(template));
+    };
 
     /*----------------------------+
     | INDEXING                    |
@@ -26695,8 +26976,8 @@ var get_first_turn = function() {
      * Each collection maintains a list of DynamicViews associated with it
      **/
 
-    Collection.prototype.addDynamicView = function (name, persistent) {
-      var dv = new DynamicView(this, name, persistent);
+    Collection.prototype.addDynamicView = function (name, options) {
+      var dv = new DynamicView(this, name, options);
       this.DynamicViews.push(dv);
 
       return dv;
@@ -26848,7 +27129,7 @@ var get_first_turn = function() {
         this.commit();
         this.dirty = true; // for autosave scenarios
         this.emit('update', doc);
-
+        return doc;
       } catch (err) {
         this.rollback();
         console.error(err.message);
@@ -26980,7 +27261,7 @@ var get_first_turn = function() {
           position = arr[1];
         var self = this;
         Object.keys(this.constraints.unique).forEach(function (key) {
-          if( doc[key] !== null && typeof doc[key] !== 'undefined' ) {
+          if (doc[key] !== null && typeof doc[key] !== 'undefined') {
             self.constraints.unique[key].remove(doc[key]);
           }
         });
@@ -27086,9 +27367,7 @@ var get_first_turn = function() {
      * @returns {Resultset} : (or data array if any map or join functions where called)
      */
     Collection.prototype.chain = function (transform, parameters) {
-      var idx, 
-        step,
-        rs = new Resultset(this, null, null);
+      var rs = new Resultset(this, null, null);
 
       if (typeof transform === 'undefined') {
         return rs;
@@ -27104,33 +27383,7 @@ var get_first_turn = function() {
       // either they passed in raw transform array or we looked it up, so process
       if (typeof transform === 'object' && Array.isArray(transform)) {
         // if parameters were passed, apply them
-        if (typeof parameters !== 'undefined') {
-          transform = Utils.resolveTransformParams(transform, parameters);
-        }
-
-        for(idx = 0; idx < transform.length; idx++) {
-          step = transform[idx];
-
-          switch (step.type) {
-            case "find" : rs.find(step.value); break;
-            case "where" : rs.where(step.value); break;
-            case "simplesort" : rs.simplesort(step.property, step.desc); break;
-            case "compoundsort" : rs.compoundsort(step.value); break;
-            case "sort" : rs.sort(step.value); break;
-            case "limit" : rs = rs.limit(step.value); break;  // limit makes copy so update reference
-            case "offset" : rs = rs.offset(step.value); break; // offset makes copy so update reference
-            case "map" : rs = rs.map(step.value); break;
-            case "eqJoin" : rs = rs.eqJoin (step.joinData, step.leftJoinKey, step.rightJoinKey, step.mapFun); break;
-            // following cases break chain by returning array data so make any of these last in transform steps
-            case "mapReduce" : rs = rs.mapReduce(step.mapFunction, step.reduceFunction); break;
-            // following cases update documents in current filtered resultset (use carefully)
-            case "update" : rs.update(step.value); break;
-            case "remove" : rs.remove(); break;
-            default : break;
-          }
-        }
-
-        return rs;
+        return rs.transform(transform, parameters);
       }
 
       return null;
@@ -27555,7 +27808,7 @@ var get_first_turn = function() {
     UniqueIndex.prototype.keyMap = {};
     UniqueIndex.prototype.lokiMap = {};
     UniqueIndex.prototype.set = function (obj) {
-      if (obj[this.field] !== null && typeof(obj[this.field]) !== 'undefined') {
+      if (obj[this.field] !== null && typeof (obj[this.field]) !== 'undefined') {
         if (this.keyMap[obj[this.field]]) {
           throw new Error('Duplicate key for property ' + this.field + ': ' + obj[this.field]);
         } else {
@@ -27583,7 +27836,7 @@ var get_first_turn = function() {
     };
     UniqueIndex.prototype.remove = function (key) {
       var obj = this.keyMap[key];
-      if( obj !== null && typeof obj !== 'undefined') {
+      if (obj !== null && typeof obj !== 'undefined') {
         this.keyMap[key] = undefined;
         this.lokiMap[obj.$loki] = undefined;
       } else {
@@ -27726,6 +27979,4 @@ var get_first_turn = function() {
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./loki-indexed-adapter.js":6,"fs":8}],8:[function(require,module,exports){
-
-},{}]},{},[1]);
+},{"./loki-indexed-adapter.js":7,"fs":1}]},{},[2]);
