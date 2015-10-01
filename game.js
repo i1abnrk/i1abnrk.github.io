@@ -225,6 +225,9 @@ var init = function() {
             }));
         });
     });
+    
+    var center = get_center('Moscva');
+    window.scrollTo(center.x, center.y);
 }
 
 //utils
@@ -408,7 +411,7 @@ var get_center = function(shape) {
 }
 
 var draw_details = function(options) {
-    var states = db.getCollection('states').data;
+    var states = l_states.data;
     var border_layer = d3.select('div').append('svg')
         .attr({'width': 2298,'height': 1730})
         .style({'background-color':'transparent', 'text-align':'center',
