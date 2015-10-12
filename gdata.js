@@ -21,7 +21,7 @@ var Nations_init = [
 	},
 	{	name: 'Prussia',
 		color: 'rgb(0,0,255)',
-		demonym: 'Prussian',
+		demonym: 'Prussianns',
 		states: ['Gdansk', 'Warsawa', 'Berlin']
 	},
 	{	name: 'Alemania',

@@ -2,28 +2,37 @@
 const DEFAULT_MAP_LABEL_FONT = "12pt Georgia";
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+/**MODE tells us what content to display with utils.show() */
 const MODE = {
     EXIT: 0,
     INFO: 1,
     ATTACK: 2,
     BUY: 3,
     SELL: 4,
-    GIVE: 5,
-    SEND: 6,
-    SPY: 7,
+    SPY: 5,
+    MAP: 6,
+    BATTLE: 8,
     SAVE: 16,
-    LOAD: 17
+    LOAD: 17,
+    WIN: 18,
+    LOSE: 19
 }
-
+/**the game clock definition for the first turn*/
 const FIRST_TURN = {month: 1, year: 475}
+/**turns before we lose contact with a faraway land*/
 const SPY_TIMEOUT = 12;
+/**how many randoms to prebuffer*/
 const GRABBAG_SIZE = 100;
+/***/
 var lbl_pfx = 'lbl_';
-//Just get a bunch of rands every now and then since we need so many each turn.
+var att_pfx = 'ati_';
+
+/*Just get a bunch of rands every now and then since we need so many each turn.*/
 var grabbag = [];
-//Cause generation on first use
+/**Cause generation on first use*/
 var bagCounter = GRABBAG_SIZE;
 
+/**utils function based on http://summerstyle.github.io */
 var utils = {
         offsetX : function(node) {
             var box = node.getBoundingClientRect(),
@@ -51,12 +60,10 @@ var utils = {
         },
         hide : function(node) {
             node.style('display', 'none');
-
             return this;
         },
         show : function(node) {
             node.style('display', 'block');
-
             return this;
         },
         encode : function(str) {
@@ -132,8 +139,8 @@ var game_clock = FIRST_TURN;
 
 var selected_state = '';
 
-/*A Turn is the frame of the market for procedural generation.
- *Note: this.commodity.price is the static _base_ price, while this.price is the
+/**A Turn is the frame of the market: a metadata store for procedural generation.
+ * Note: this.commodity.price is the static _base_ price, while this.price is the
  *      dynamic current price.*/
 var Turn =  function(values) {
     this.year = values.year;
@@ -151,6 +158,7 @@ var Turn =  function(values) {
     this.remark = values.remark;
 }
 
+/**Commodities are entries*/
 var Commodity = function(values) {
     /*what it's called*/
     this.name=values.name;
@@ -181,6 +189,7 @@ var Emperor = function(values) {
     this.nation = values.nation;
 }
 
+/***/
 var gdata = require('./gdata.js');
 var econ = require('./microeconomics.js');
 var _ = require('lodash');
@@ -341,19 +350,25 @@ var KEYS = {
     E: 69
 };
 
-onDocumentKeydown = function(e) {
+var onDocumentKeydown = function(e) {
     switch(e.keyCode) {
+        //1.6 ms delay
+        
         case KEYS.W:
             //scrollMap('top');
+            window.scrollBy(0, -1);
             break;
         case KEYS.A:
             //scrollMap('left');
+            window.scrollBy(-1, 0);
             break;
         case KEYS.S:
             //scrollMap('down');
+            window.scrollBy(0, 1);
             break;
         case KEYS.D:
             //scrollMap('right');
+            window.scrollBy(1, 0);
             break;
         case KEYS.Q:
             //zoomMap('in');
@@ -364,6 +379,7 @@ onDocumentKeydown = function(e) {
     }
 }
 
+//document.addEventListener('keydown', onDocumentKeyDown, false);
 /*GUI*/
 var map_layer = utils.id('map_layer');
 var map_label_font = DEFAULT_MAP_LABEL_FONT;
@@ -433,83 +449,100 @@ var draw_map = function(options) {
 
 }
 
-var do_attack = function(aggressor, sent, defender) {
+var attack_round = function(attack_dice, defense_dice) {
+    var attack_dice_count = attack_dice.length;
+    var defense_dice_count = defense_dice.length;
+    var attacker_count = 0;
+    var defender_count = 0;
+    switch(defense_dice_count) {
+        case 1:
+            if(attack_dice_count==1) {
+                if(attack_dice[0] <= defense_dice[0]) {
+                    attacker_count -= 1;
+                } else {
+                    defender_count -= 1;
+                    win = true;
+                }
+            } else {
+                if(attack_dice[0] <= defense_dice[0]) {
+                    attacker_count -= 1;
+                } else {
+                    defender_count -= 1;
+                    win = true;
+                }
+            }
+            break;
+        case 2:
+        case 3:
+            if(attack_dice_count == 1){
+                if(attack_dice[0] <= defense_dice[0]) {
+                    attacker_count -= 1;
+                    fail = true;
+                } else {
+                    defender_count -= 1;
+                }
+            } else {
+                if (attack_dice[0] <= defense_dice[0]) {
+                    if (attack_dice[1] <= defense_dice[1]) {
+                        attacker_count -= 2;
+                    } else {
+                        attacker_count -= 1;
+                        defender_count -= 1;
+                    }
+                } else {
+                    if(attack_dice[1] <= defense_dice[1]) {
+                        attacker_count -= 1;
+                        defender_count -= 1;
+                    } else {
+                        defender_count -= 2;
+                    }
+                }
+            }
+            break;
+        default:
+            break;
+    }
+    return {a: attacker_count, d: defender_count};
+}
+
+var do_attack = function(attacker, sent, defender) {
 	if (sent <= 0) return;
-	var aggressor_count = sent;
-	var defender_count = l_states.soldiers;
 	var win = false;
 	var fail = false;
+    var att_state = l_states.by('name', attacker);
+    var def_state = l_states.by('name', defender);
+	var attacker_count = sent;
+	var defender_count = def_state.soldiers;
 	for (var s = 1; s < sent && !win && !fail; s++) {
 		var attack_dice_count = Math.min(2, sent-s);
 		var attack_dice = [];
 		var defense_dice_count = Math.min(3, defender_count);
 		var defense_dice = [];
+        setTimeout(show_battle({akey: attacker, aval: attacker_count, dkey: defender, dval: defender_count}), 167);
 		
-		for (var a=1; a <= attack_dice_count; a++) {
-			attack_dice[a] = getRand(1,5);
+		for (var a=0; a < attack_dice_count; a++) {
+			attack_dice[a] = utils.getRand(1,5);
 		}
-		for (var d=1; d <= defense_dice_count; d++) {
-			defense_dice[d] = getRand(1,5);
+		for (var d=0; d < defense_dice_count; d++) {
+			defense_dice[d] = utils.getRand(1,5);
 		}
 		//sort descending
 		attack_dice.sort(function(a, b){return b-a});
 		defense_dice.sort(function(a, b){return b-a});
 		
-		switch(defense_dice_count) {
-			case 1:
-				if(attack_dice_count==1) {
-					if(attack_dice[0] <= defense_dice[0]) {
-						aggressor_count -= 1;
-					} else {
-						defender_count -= 1;
-						win = true;
-					}
-				} else {
-					if(attack_dice[0] <= defense_dice[0]) {
-						aggressor_count -= 1;
-					} else {
-						defender_count -= 1;
-						win = true;
-					}
-				}
-				break;
-			case 2:
-			case 3:
-				if(attack_dice_count == 1){
-					if(attack_dice[0] <= defense_dice[0]) {
-						aggressor_count -= 1;
-						fail = true;
-					} else {
-						defender_count -= 1;
-					}
-				} else {
-					if (attack_dice[0] <= defense_dice[0]) {
-						if (attack_dice[1] <= defense_dice[1]) {
-							aggressor_count -= 2;
-						} else {
-							aggressor_count -= 1;
-							defender_count -= 1;
-						}
-					} else {
-						if(attack_dice[1] <= defense_dice[1]) {
-							aggressor_count -= 1;
-							defender_count -= 1;
-						} else {
-							defender_count -= 2;
-						}
-					}
-				}
-				break;
-			default:
-				break;
-		}
-		if (aggressor_count <= 0) return 0;
-		if (defender_count <= 0) return aggressor_count;
-		return -1;
+		var losses = attack_round(attack_dice, defense_dice);
+		attacker_count += losses.a;
+        defender_count += losses.d;
+		if (attacker_count <= 0) return 0;
+		if (defender_count <= 0) return attacker_count;
 	}
+    
+    return -1;
 }
 
 var map_event_handler = function() {
+    //add keydown handler
+    
     d3.selectAll('path').on({
         mouseenter: function() {
             if (selected_state != this.id) {
@@ -544,6 +577,14 @@ var map_event_handler = function() {
 					selected_state = this.id;
                     show_attack(selected_state);
 					break;
+                case MODE.MAP:
+                    
+                    break;
+                case MODE.BATTLE:
+                case MODE.WIN:
+                case MODE.LOSE:
+                    break;
+                    
             }
             return;
         }
@@ -614,11 +655,21 @@ var map_event_handler = function() {
                         }
                 }
 				game_mode = MODE.ATTACK;
-                if (selected_state != '') {
+                if(selected_state!='') {
                     show_attack(selected_state);
                 }
 			}
 		});
+        
+        utils.id('map').on({
+            click: function() {
+                var panels = d3.selectAll('#viewport div');
+                _.each(panels , function (p) {
+                    utils.hide(p);
+                });
+                game_mode = MODE.MAP;
+            }
+        });
         
         
 		d3.selectAll('#nav a').on({
@@ -634,6 +685,7 @@ var map_event_handler = function() {
                 utils.hide(utils.id('attack_panel'));
             }
         });
+        
 }
 
 var draw_gui = function(context, options) {
@@ -701,6 +753,7 @@ var show_attack = function(state_name) {
 			utils.hide(ap);
 		}
 	});
+    var confirm_button = ap.select('#a_confirm');
     var ap_body = ap.select('#a_table');
     ap_body.html('');
     var athead = ap_body.append('thead').attr('colspan', 3).text('Can send soldiers from: ');
@@ -714,7 +767,55 @@ var show_attack = function(state_name) {
             append_row(ap_body, [n.name, n.soldiers, textfield]);
         });
     }
+    confirm_button.on({
+        click: function() {
+            var defender = state_name;
+            var attacker = ap_body.select('input').attr('id')
+                .substring(att_pfx.length);
+                //TODO: convert to int
+            var sent = Number(ap_body.select('input').property('value'));
+            game_mode = MODE.BATTLE;
+            utils.hide(ap);
+            do_attack(attacker, sent, defender);
+            game_mode = MODE.ATTACK;
+            utils.show(ap);
+            /*
+            var assignment = ap_body.selectAll('input');
+            
+            var army = {};
+            _.each(assignment, function(battalion) {
+                var state_name = selected_state;
+                var sent = assignment.property('value');
+                assignment.property('value');
+                army[state_name] = sent;
+            });*/
+        }
+    });
     utils.show(ap);
+}
+
+var show_battle = function(battle) {
+    var bp = utils.id('battle_panel');
+    var bp_head = bp.select('h5');
+    var bp_body = bp.select('table');
+    
+    bp_head.html('');
+    bp_head.append('span')
+       .style({color: state_color(battle.akey)})
+       .text(battle.akey);
+    bp_head.append('span').text(' vs ');
+    bp_head.append('span')
+       .style({color: state_color(battle.dkey)})
+       .text(battle.dkey);
+       
+    bp_body.html('');
+    append_row(bp_body, [battle.aval, battle.dval]);
+    var close_button = bp.select('.close_button').on({
+		click: function() {
+			utils.hide(bp);
+		}
+	});
+    utils.show(bp);
 }
 
 /*mainline execution*/
